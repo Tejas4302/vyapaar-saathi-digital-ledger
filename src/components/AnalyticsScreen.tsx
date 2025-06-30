@@ -32,14 +32,14 @@ const AnalyticsScreen: React.FC = () => {
     // Top selling calculation (simplified - based on transaction amounts)
     const salesByAmount = periodTransactions
       .filter(t => t.type === 'cash_in')
-      .reduce((acc: any, transaction) => {
-        const amount = transaction.amount;
+      .reduce((acc: Record<string, number>, transaction) => {
+        const amount = transaction.amount.toString();
         acc[amount] = (acc[amount] || 0) + 1;
         return acc;
       }, {});
     
     const topSales = Object.entries(salesByAmount)
-      .sort(([,a], [,b]) => (b as number) - (a as number))
+      .sort(([,a], [,b]) => b - a)
       .slice(0, 3);
     
     const outstandingAmount = customers.reduce((total, c) => total + c.totalOutstanding, 0);
