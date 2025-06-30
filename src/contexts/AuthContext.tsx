@@ -15,8 +15,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  signUp: (emailOrPhone: string, password: string, name: string) => Promise<{ success: boolean; message: string; needsVerification?: boolean }>;
-  verifyOTP: (emailOrPhone: string, otp: string) => Promise<{ success: boolean; message: string }>;
+  signUp: (emailOrPhone: string, password: string, name: string) => Promise<{ success: boolean; message: string }>;
   login: (emailOrPhone: string, password: string) => Promise<{ success: boolean; message: string }>;
   logout: () => void;
 }
@@ -36,103 +35,97 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for stored user data
-    const storedUser = localStorage.getItem('vyapaar_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    // Clear all existing data to ensure fresh start
+    localStorage.clear();
     setIsLoading(false);
   }, []);
 
   const signUp = async (emailOrPhone: string, password: string, name: string) => {
     setIsLoading(true);
     try {
-      // For demo purposes, simulate signup with OTP verification required
+      // Validate mobile number format (exactly 10 digits)
+      if (!emailOrPhone.includes('@')) {
+        if (!/^[6-9]\d{9}$/.test(emailOrPhone)) {
+          setIsLoading(false);
+          return { success: false, message: 'Mobile number must be exactly 10 digits starting with 6-9' };
+        }
+      }
+
+      // Simulate signup
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Store pending user data for OTP verification
-      const pendingUser = { emailOrPhone, password, name };
-      localStorage.setItem('pending_user', JSON.stringify(pendingUser));
+      // Create unique user ID
+      const userId = Math.random().toString(36).substr(2, 9);
       
-      console.log(`OTP sent to ${emailOrPhone} for verification`);
+      const userData = {
+        id: userId,
+        name,
+        ...(emailOrPhone.includes('@') ? { email: emailOrPhone } : { phone: emailOrPhone }),
+        isVerified: true
+      };
+      
+      setUser(userData);
+      
+      // Store user data with unique key
+      localStorage.setItem(`vyapaar_user_${userId}`, JSON.stringify(userData));
+      localStorage.setItem(`user_credentials_${userId}`, JSON.stringify({ emailOrPhone, password }));
+      localStorage.setItem('current_user_id', userId);
+      
       setIsLoading(false);
-      return { success: true, message: 'OTP sent to your email/phone for verification', needsVerification: true };
+      return { success: true, message: 'Account created successfully!' };
     } catch (error) {
       setIsLoading(false);
       return { success: false, message: 'Failed to create account' };
     }
   };
 
-  const verifyOTP = async (emailOrPhone: string, otp: string) => {
-    setIsLoading(true);
-    try {
-      // Simulate OTP verification
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // For demo purposes, accept any 6-digit OTP
-      if (otp.length === 6) {
-        const pendingUserData = localStorage.getItem('pending_user');
-        if (pendingUserData) {
-          const { password, name } = JSON.parse(pendingUserData);
-          
-          const userData = {
-            id: Math.random().toString(36).substr(2, 9),
-            name,
-            ...(emailOrPhone.includes('@') ? { email: emailOrPhone } : { phone: emailOrPhone }),
-            isVerified: true
-          };
-          
-          setUser(userData);
-          localStorage.setItem('vyapaar_user', JSON.stringify(userData));
-          localStorage.setItem('user_credentials', JSON.stringify({ emailOrPhone, password }));
-          localStorage.removeItem('pending_user');
-          
-          setIsLoading(false);
-          return { success: true, message: 'Account verified successfully!' };
-        } else {
-          setIsLoading(false);
-          return { success: false, message: 'Verification session expired' };
-        }
-      } else {
-        setIsLoading(false);
-        return { success: false, message: 'Invalid OTP' };
-      }
-    } catch (error) {
-      setIsLoading(false);
-      return { success: false, message: 'Verification failed' };
-    }
-  };
-
   const login = async (emailOrPhone: string, password: string) => {
     setIsLoading(true);
     try {
+      // Validate mobile number format if not email
+      if (!emailOrPhone.includes('@')) {
+        if (!/^[6-9]\d{9}$/.test(emailOrPhone)) {
+          setIsLoading(false);
+          return { success: false, message: 'Mobile number must be exactly 10 digits starting with 6-9' };
+        }
+      }
+
       // Simulate login verification
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Check stored credentials for demo
-      const storedCredentials = localStorage.getItem('user_credentials');
-      if (storedCredentials) {
-        const { emailOrPhone: storedEmail, password: storedPassword } = JSON.parse(storedCredentials);
-        
-        if (emailOrPhone === storedEmail && password === storedPassword) {
-          const userData = {
-            id: '1',
-            name: 'Shop Owner',
-            ...(emailOrPhone.includes('@') ? { email: emailOrPhone } : { phone: emailOrPhone }),
-            storeName: 'My Store',
-            isVerified: true
-          };
-          setUser(userData);
-          localStorage.setItem('vyapaar_user', JSON.stringify(userData));
-          setIsLoading(false);
-          return { success: true, message: 'Login successful!' };
-        } else {
-          setIsLoading(false);
-          return { success: false, message: 'Invalid credentials' };
+      // Check all stored credentials to find matching user
+      let foundUser = null;
+      let foundUserId = null;
+      
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('user_credentials_')) {
+          const userId = key.replace('user_credentials_', '');
+          const storedCredentials = localStorage.getItem(key);
+          
+          if (storedCredentials) {
+            const { emailOrPhone: storedEmail, password: storedPassword } = JSON.parse(storedCredentials);
+            
+            if (emailOrPhone === storedEmail && password === storedPassword) {
+              const userData = localStorage.getItem(`vyapaar_user_${userId}`);
+              if (userData) {
+                foundUser = JSON.parse(userData);
+                foundUserId = userId;
+                break;
+              }
+            }
+          }
         }
+      }
+      
+      if (foundUser && foundUserId) {
+        setUser(foundUser);
+        localStorage.setItem('current_user_id', foundUserId);
+        setIsLoading(false);
+        return { success: true, message: 'Login successful!' };
       } else {
         setIsLoading(false);
-        return { success: false, message: 'No account found. Please sign up first.' };
+        return { success: false, message: 'Invalid credentials or account not found' };
       }
     } catch (error) {
       setIsLoading(false);
@@ -142,7 +135,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('vyapaar_user');
+    localStorage.removeItem('current_user_id');
   };
 
   return (
@@ -150,7 +143,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       user,
       isLoading,
       signUp,
-      verifyOTP,
       login,
       logout
     }}>

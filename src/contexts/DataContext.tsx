@@ -10,6 +10,7 @@ export interface Transaction {
   customerId?: string;
   itemId?: string;
   paymentStatus: 'paid' | 'udhaar';
+  userId: string; // Added user isolation
 }
 
 export interface Customer {
@@ -18,6 +19,7 @@ export interface Customer {
   phone?: string;
   totalOutstanding: number;
   transactions: Transaction[];
+  userId: string; // Added user isolation
 }
 
 export interface InventoryItem {
@@ -29,15 +31,16 @@ export interface InventoryItem {
   sellingPrice: number;
   currentStock: number;
   lowStockThreshold: number;
+  userId: string; // Added user isolation
 }
 
 interface DataContextType {
   transactions: Transaction[];
   customers: Customer[];
   inventory: InventoryItem[];
-  addTransaction: (transaction: Omit<Transaction, 'id' | 'date'>) => void;
-  addCustomer: (customer: Omit<Customer, 'id' | 'totalOutstanding' | 'transactions'>) => void;
-  addInventoryItem: (item: Omit<InventoryItem, 'id'>) => void;
+  addTransaction: (transaction: Omit<Transaction, 'id' | 'date' | 'userId'>) => void;
+  addCustomer: (customer: Omit<Customer, 'id' | 'totalOutstanding' | 'transactions' | 'userId'>) => void;
+  addInventoryItem: (item: Omit<InventoryItem, 'id' | 'userId'>) => void;
   updateStock: (itemId: string, quantity: number) => void;
   getTodaysSummary: () => { sales: number; expenses: number; net: number };
   getCustomerById: (id: string) => Customer | undefined;
@@ -58,35 +61,62 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
 
-  useEffect(() => {
-    // Load data from localStorage
-    const storedTransactions = localStorage.getItem('vyapaar_transactions');
-    const storedCustomers = localStorage.getItem('vyapaar_customers');
-    const storedInventory = localStorage.getItem('vyapaar_inventory');
+  const getCurrentUserId = () => {
+    return localStorage.getItem('current_user_id');
+  };
 
-    if (storedTransactions) {
-      setTransactions(JSON.parse(storedTransactions).map((t: any) => ({
-        ...t,
-        date: new Date(t.date)
-      })));
-    }
-    if (storedCustomers) {
-      setCustomers(JSON.parse(storedCustomers));
-    }
-    if (storedInventory) {
-      setInventory(JSON.parse(storedInventory));
+  useEffect(() => {
+    const currentUserId = getCurrentUserId();
+    if (currentUserId) {
+      // Load user-specific data from localStorage
+      const storedTransactions = localStorage.getItem(`vyapaar_transactions_${currentUserId}`);
+      const storedCustomers = localStorage.getItem(`vyapaar_customers_${currentUserId}`);
+      const storedInventory = localStorage.getItem(`vyapaar_inventory_${currentUserId}`);
+
+      if (storedTransactions) {
+        setTransactions(JSON.parse(storedTransactions).map((t: any) => ({
+          ...t,
+          date: new Date(t.date)
+        })));
+      } else {
+        setTransactions([]);
+      }
+      
+      if (storedCustomers) {
+        setCustomers(JSON.parse(storedCustomers));
+      } else {
+        setCustomers([]);
+      }
+      
+      if (storedInventory) {
+        setInventory(JSON.parse(storedInventory));
+      } else {
+        setInventory([]);
+      }
+    } else {
+      // Clear data if no user logged in
+      setTransactions([]);
+      setCustomers([]);
+      setInventory([]);
     }
   }, []);
 
   const saveToStorage = (key: string, data: any) => {
-    localStorage.setItem(key, JSON.stringify(data));
+    const currentUserId = getCurrentUserId();
+    if (currentUserId) {
+      localStorage.setItem(`${key}_${currentUserId}`, JSON.stringify(data));
+    }
   };
 
-  const addTransaction = (transactionData: Omit<Transaction, 'id' | 'date'>) => {
+  const addTransaction = (transactionData: Omit<Transaction, 'id' | 'date' | 'userId'>) => {
+    const currentUserId = getCurrentUserId();
+    if (!currentUserId) return;
+
     const newTransaction: Transaction = {
       ...transactionData,
       id: Math.random().toString(36).substr(2, 9),
-      date: new Date()
+      date: new Date(),
+      userId: currentUserId
     };
 
     const updatedTransactions = [...transactions, newTransaction];
@@ -96,7 +126,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Update customer outstanding if udhaar
     if (newTransaction.paymentStatus === 'udhaar' && newTransaction.customerId) {
       const updatedCustomers = customers.map(customer => {
-        if (customer.id === newTransaction.customerId) {
+        if (customer.id === newTransaction.customerId && customer.userId === currentUserId) {
           return {
             ...customer,
             totalOutstanding: customer.totalOutstanding + newTransaction.amount,
@@ -110,12 +140,16 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const addCustomer = (customerData: Omit<Customer, 'id' | 'totalOutstanding' | 'transactions'>) => {
+  const addCustomer = (customerData: Omit<Customer, 'id' | 'totalOutstanding' | 'transactions' | 'userId'>) => {
+    const currentUserId = getCurrentUserId();
+    if (!currentUserId) return;
+
     const newCustomer: Customer = {
       ...customerData,
       id: Math.random().toString(36).substr(2, 9),
       totalOutstanding: 0,
-      transactions: []
+      transactions: [],
+      userId: currentUserId
     };
 
     const updatedCustomers = [...customers, newCustomer];
@@ -123,10 +157,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     saveToStorage('vyapaar_customers', updatedCustomers);
   };
 
-  const addInventoryItem = (itemData: Omit<InventoryItem, 'id'>) => {
+  const addInventoryItem = (itemData: Omit<InventoryItem, 'id' | 'userId'>) => {
+    const currentUserId = getCurrentUserId();
+    if (!currentUserId) return;
+
     const newItem: InventoryItem = {
       ...itemData,
-      id: Math.random().toString(36).substr(2, 9)
+      id: Math.random().toString(36).substr(2, 9),
+      userId: currentUserId
     };
 
     const updatedInventory = [...inventory, newItem];
@@ -135,8 +173,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateStock = (itemId: string, quantity: number) => {
+    const currentUserId = getCurrentUserId();
+    if (!currentUserId) return;
+
     const updatedInventory = inventory.map(item => {
-      if (item.id === itemId) {
+      if (item.id === itemId && item.userId === currentUserId) {
         return {
           ...item,
           currentStock: Math.max(0, item.currentStock + quantity)
@@ -149,9 +190,12 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const getTodaysSummary = () => {
+    const currentUserId = getCurrentUserId();
+    if (!currentUserId) return { sales: 0, expenses: 0, net: 0 };
+
     const today = new Date();
     const todaysTransactions = transactions.filter(t => 
-      t.date.toDateString() === today.toDateString()
+      t.date.toDateString() === today.toDateString() && t.userId === currentUserId
     );
 
     const sales = todaysTransactions
@@ -166,7 +210,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const getCustomerById = (id: string) => {
-    return customers.find(customer => customer.id === id);
+    const currentUserId = getCurrentUserId();
+    if (!currentUserId) return undefined;
+    
+    return customers.find(customer => customer.id === id && customer.userId === currentUserId);
   };
 
   return (
