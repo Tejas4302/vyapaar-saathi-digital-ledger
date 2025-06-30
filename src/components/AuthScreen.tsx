@@ -5,17 +5,18 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
-import { Mail, Phone, User, Globe } from 'lucide-react';
+import { Mail, Phone, User, Globe, Lock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
 
 const AuthScreen: React.FC = () => {
-  const { sendOTP, verifyOTP, login, isLoading } = useAuth();
+  const { signUp, verifyOTP, login, isLoading } = useAuth();
   const { t, language, setLanguage } = useLanguage();
   const [step, setStep] = useState<'input' | 'verify'>('input');
   const [isSignUp, setIsSignUp] = useState(false);
   const [emailOrPhone, setEmailOrPhone] = useState('');
+  const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [otp, setOtp] = useState('');
 
@@ -23,16 +24,45 @@ const AuthScreen: React.FC = () => {
   const isValidPhone = /^[6-9]\d{9}$/.test(emailOrPhone);
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailOrPhone);
 
-  const handleSendOTP = async () => {
+  const handleSignUp = async () => {
     if (!isValidEmail && !isValidPhone) {
       toast.error('Please enter a valid email or 10-digit phone number');
       return;
     }
 
-    const result = await sendOTP(emailOrPhone);
-    if (result.success) {
+    if (!password || password.length < 6) {
+      toast.error('Password must be at least 6 characters long');
+      return;
+    }
+
+    if (!name.trim()) {
+      toast.error('Please enter your name');
+      return;
+    }
+
+    const result = await signUp(emailOrPhone, password, name);
+    if (result.success && result.needsVerification) {
       toast.success(t('otpSent'));
       setStep('verify');
+    } else {
+      toast.error(result.message);
+    }
+  };
+
+  const handleLogin = async () => {
+    if (!isValidEmail && !isValidPhone) {
+      toast.error('Please enter a valid email or 10-digit phone number');
+      return;
+    }
+
+    if (!password) {
+      toast.error('Please enter your password');
+      return;
+    }
+
+    const result = await login(emailOrPhone, password);
+    if (result.success) {
+      toast.success(t('loginSuccessful'));
     } else {
       toast.error(result.message);
     }
@@ -44,30 +74,18 @@ const AuthScreen: React.FC = () => {
       return;
     }
 
-    if (isSignUp) {
-      if (!name.trim()) {
-        toast.error('Please enter your name');
-        return;
-      }
-      const result = await verifyOTP(emailOrPhone, otp, name);
-      if (result.success) {
-        toast.success(t('accountCreated'));
-      } else {
-        toast.error(result.message);
-      }
+    const result = await verifyOTP(emailOrPhone, otp);
+    if (result.success) {
+      toast.success(t('accountCreated'));
     } else {
-      const result = await login(emailOrPhone, otp);
-      if (result.success) {
-        toast.success(t('loginSuccessful'));
-      } else {
-        toast.error(result.message);
-      }
+      toast.error(result.message);
     }
   };
 
   const resetForm = () => {
     setStep('input');
     setEmailOrPhone('');
+    setPassword('');
     setName('');
     setOtp('');
   };
@@ -112,69 +130,51 @@ const AuthScreen: React.FC = () => {
             </TabsList>
 
             <TabsContent value="login" className="space-y-4">
-              {step === 'input' ? (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      {t('email')} / {t('phone')}
-                    </label>
-                    <div className="relative">
-                      {isEmail ? (
-                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                      ) : (
-                        <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                      )}
-                      <Input
-                        type="text"
-                        placeholder={t('enterEmailOrPhone')}
-                        value={emailOrPhone}
-                        onChange={(e) => setEmailOrPhone(e.target.value)}
-                        className="pl-10"
-                        required
-                      />
-                    </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    {t('email')} / {t('phone')}
+                  </label>
+                  <div className="relative">
+                    {isEmail ? (
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    ) : (
+                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    )}
+                    <Input
+                      type="text"
+                      placeholder={t('enterEmailOrPhone')}
+                      value={emailOrPhone}
+                      onChange={(e) => setEmailOrPhone(e.target.value)}
+                      className="pl-10"
+                      required
+                    />
                   </div>
-                  <Button
-                    onClick={handleSendOTP}
-                    className="mobile-button w-full bg-primary hover:bg-blue-800"
-                    disabled={isLoading || (!isValidEmail && !isValidPhone)}
-                  >
-                    {isLoading ? 'Sending...' : t('sendOTP')}
-                  </Button>
                 </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="text-center">
-                    <p className="text-sm text-gray-600 mb-4">
-                      OTP sent to {emailOrPhone}
-                    </p>
-                    <InputOTP value={otp} onChange={setOtp} maxLength={6}>
-                      <InputOTPGroup>
-                        <InputOTPSlot index={0} />
-                        <InputOTPSlot index={1} />
-                        <InputOTPSlot index={2} />
-                        <InputOTPSlot index={3} />
-                        <InputOTPSlot index={4} />
-                        <InputOTPSlot index={5} />
-                      </InputOTPGroup>
-                    </InputOTP>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    {t('password')}
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <Input
+                      type="password"
+                      placeholder={t('enterPassword')}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="pl-10"
+                      required
+                    />
                   </div>
-                  <Button
-                    onClick={handleVerifyOTP}
-                    className="mobile-button w-full bg-primary hover:bg-blue-800"
-                    disabled={isLoading || otp.length !== 6}
-                  >
-                    {isLoading ? 'Verifying...' : t('verifyOTP')}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={resetForm}
-                    className="w-full"
-                  >
-                    Back
-                  </Button>
                 </div>
-              )}
+                <Button
+                  onClick={handleLogin}
+                  className="mobile-button w-full bg-primary hover:bg-blue-800"
+                  disabled={isLoading || (!isValidEmail && !isValidPhone) || !password}
+                >
+                  {isLoading ? 'Logging in...' : t('login')}
+                </Button>
+              </div>
             </TabsContent>
 
             <TabsContent value="signup" className="space-y-4">
@@ -214,19 +214,34 @@ const AuthScreen: React.FC = () => {
                       />
                     </div>
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">{t('password')}</label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <Input
+                        type="password"
+                        placeholder={t('createPassword')}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="pl-10"
+                        required
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Minimum 6 characters</p>
+                  </div>
                   <Button
-                    onClick={handleSendOTP}
+                    onClick={handleSignUp}
                     className="mobile-button w-full bg-primary hover:bg-blue-800"
-                    disabled={isLoading || !name.trim() || (!isValidEmail && !isValidPhone)}
+                    disabled={isLoading || !name.trim() || (!isValidEmail && !isValidPhone) || password.length < 6}
                   >
-                    {isLoading ? 'Sending...' : t('sendOTP')}
+                    {isLoading ? 'Creating Account...' : t('signUp')}
                   </Button>
                 </div>
               ) : (
                 <div className="space-y-4">
                   <div className="text-center">
                     <p className="text-sm text-gray-600 mb-4">
-                      OTP sent to {emailOrPhone}
+                      OTP sent to {emailOrPhone}. Please verify to complete your account setup.
                     </p>
                     <InputOTP value={otp} onChange={setOtp} maxLength={6}>
                       <InputOTPGroup>
@@ -244,7 +259,7 @@ const AuthScreen: React.FC = () => {
                     className="mobile-button w-full bg-primary hover:bg-blue-800"
                     disabled={isLoading || otp.length !== 6}
                   >
-                    {isLoading ? 'Creating Account...' : t('verifyOTP')}
+                    {isLoading ? 'Verifying...' : t('verifyOTP')}
                   </Button>
                   <Button
                     variant="outline"

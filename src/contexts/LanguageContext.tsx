@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
 interface LanguageContextType {
   language: 'en' | 'kn';
@@ -9,20 +9,30 @@ interface LanguageContextType {
 
 const translations = {
   en: {
-    // App Title
+    // App basics
     appName: 'VyapaarSetu',
-    welcome: 'Welcome',
+    welcome: 'Welcome to',
+    getStarted: 'Get Started',
     
     // Auth
-    signUp: 'Sign Up',
     login: 'Login',
+    signUp: 'Sign Up',
     logout: 'Logout',
-    enterEmailOrPhone: 'Enter email or phone number',
+    email: 'Email',
+    phone: 'Phone',
+    password: 'Password',
+    name: 'Name',
     enterName: 'Enter your name',
-    enterOTP: 'Enter OTP',
+    enterEmail: 'Enter your email',
+    enterPhone: 'Enter your phone number',
+    enterEmailOrPhone: 'Enter email or phone',
+    enterPassword: 'Enter your password',
+    createPassword: 'Create a password',
     sendOTP: 'Send OTP',
     verifyOTP: 'Verify OTP',
-    resendOTP: 'Resend OTP',
+    otpSent: 'OTP sent successfully',
+    loginSuccessful: 'Login successful',
+    accountCreated: 'Account created successfully',
     
     // Navigation
     calculator: 'Calculator',
@@ -33,80 +43,78 @@ const translations = {
     profile: 'Profile',
     
     // Calculator
-    cashIn: 'Cash In',
-    cashOut: 'Cash Out',
-    saveTransaction: 'Save Transaction',
-    todaysSummary: "Today's Summary",
-    sales: 'Sales',
-    expenses: 'Expenses',
-    net: 'Net',
+    clear: 'Clear',
+    equals: 'Equals',
+    enter: 'Enter',
+    sale: 'Sale',
+    purchase: 'Purchase',
+    expense: 'Expense',
+    income: 'Income',
+    description: 'Description',
+    amount: 'Amount',
     
     // Common
-    name: 'Name',
-    email: 'Email',
-    phone: 'Phone',
     save: 'Save',
     cancel: 'Cancel',
-    delete: 'Delete',
     edit: 'Edit',
+    delete: 'Delete',
+    search: 'Search',
     add: 'Add',
-    
-    // Messages
-    otpSent: 'OTP sent successfully',
-    accountCreated: 'Account created successfully!',
-    loginSuccessful: 'Login successful!',
-    invalidOTP: 'Invalid OTP',
-    transactionSaved: 'Transaction saved successfully!'
+    total: 'Total',
   },
   kn: {
-    // App Title
+    // App basics
     appName: 'ವ್ಯಾಪಾರಸೇತು',
     welcome: 'ಸ್ವಾಗತ',
+    getStarted: 'ಪ್ರಾರಂಭಿಸಿ',
     
     // Auth
-    signUp: 'ನೋಂದಣಿ',
     login: 'ಲಾಗಿನ್',
+    signUp: 'ಸೈನ್ ಅಪ್',
     logout: 'ಲಾಗೌಟ್',
-    enterEmailOrPhone: 'ಇಮೇಲ್ ಅಥವಾ ಫೋನ್ ಸಂಖ್ಯೆ ನಮೂದಿಸಿ',
-    enterName: 'ನಿಮ್ಮ ಹೆಸರು ನಮೂದಿಸಿ',
-    enterOTP: 'OTP ನಮೂದಿಸಿ',
+    email: 'ಇಮೇಲ್',
+    phone: 'ಫೋನ್',
+    password: 'ಪಾಸ್‌ವರ್ಡ್',
+    name: 'ಹೆಸರು',
+    enterName: 'ನಿಮ್ಮ ಹೆಸರನ್ನು ನಮೂದಿಸಿ',
+    enterEmail: 'ನಿಮ್ಮ ಇಮೇಲ್ ನಮೂದಿಸಿ',
+    enterPhone: 'ನಿಮ್ಮ ಫೋನ್ ಸಂಖ್ಯೆ ನಮೂದಿಸಿ',
+    enterEmailOrPhone: 'ಇಮೇಲ್ ಅಥವಾ ಫೋನ್ ನಮೂದಿಸಿ',
+    enterPassword: 'ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ',
+    createPassword: 'ಪಾಸ್‌ವರ್ಡ್ ರಚಿಸಿ',
     sendOTP: 'OTP ಕಳುಹಿಸಿ',
     verifyOTP: 'OTP ಪರಿಶೀಲಿಸಿ',
-    resendOTP: 'OTP ಮರು ಕಳುಹಿಸಿ',
+    otpSent: 'OTP ಯಶಸ್ವಿಯಾಗಿ ಕಳುಹಿಸಲಾಗಿದೆ',
+    loginSuccessful: 'ಲಾಗಿನ್ ಯಶಸ್ವಿಯಾಯಿತು',
+    accountCreated: 'ಖಾತೆ ಯಶಸ್ವಿಯಾಗಿ ರಚಿಸಲಾಗಿದೆ',
     
     // Navigation
-    calculator: 'ಲೆಕ್ಕಾಚಾರ',
-    ledger: 'ಖಾತೆ ಪುಸ್ತಕ',
+    calculator: 'ಕ್ಯಾಲ್ಕುಲೇಟರ್',
+    ledger: 'ಲೆಡ್ಜರ್',
     customers: 'ಗ್ರಾಹಕರು',
-    inventory: 'ಸ್ಟಾಕ್',
+    inventory: 'ದಾಸ್ತಾನು',
     analytics: 'ವಿಶ್ಲೇಷಣೆ',
     profile: 'ಪ್ರೊಫೈಲ್',
     
     // Calculator
-    cashIn: 'ಹಣ ಒಳಬರುವಿಕೆ',
-    cashOut: 'ಹಣ ಹೊರಹೋಗುವಿಕೆ',
-    saveTransaction: 'ವ್ಯವಹಾರ ಉಳಿಸಿ',
-    todaysSummary: 'ಇಂದಿನ ಸಾರಾಂಶ',
-    sales: 'ಮಾರಾಟ',
-    expenses: 'ಖರ್ಚು',
-    net: 'ನಿವ್ವಳ',
+    clear: 'ಸ್ಪಷ್ಟ',
+    equals: 'ಸಮಾನ',
+    enter: 'ನಮೂದಿಸಿ',
+    sale: 'ಮಾರಾಟ',
+    purchase: 'ಖರೀದಿ',
+    expense: 'ವೆಚ್ಚ',
+    income: 'ಆದಾಯ',
+    description: 'ವಿವರಣೆ',
+    amount: 'ಮೊತ್ತ',
     
     // Common
-    name: 'ಹೆಸರು',
-    email: 'ಇಮೇಲ್',
-    phone: 'ಫೋನ್',
     save: 'ಉಳಿಸಿ',
-    cancel: 'ರದ್ದುಗೊಳಿಸಿ',
-    delete: 'ಅಳಿಸಿ',
+    cancel: 'ರದ್ದುಮಾಡಿ',
     edit: 'ಸಂಪಾದಿಸಿ',
+    delete: 'ಅಳಿಸಿ',
+    search: 'ಹುಡುಕಿ',
     add: 'ಸೇರಿಸಿ',
-    
-    // Messages
-    otpSent: 'OTP ಯಶಸ್ವಿಯಾಗಿ ಕಳುಹಿಸಲಾಗಿದೆ',
-    accountCreated: 'ಖಾತೆ ಯಶಸ್ವಿಯಾಗಿ ರಚಿಸಲಾಗಿದೆ!',
-    loginSuccessful: 'ಲಾಗಿನ್ ಯಶಸ್ವಿಯಾಗಿದೆ!',
-    invalidOTP: 'ಅಮಾನ್ಯ OTP',
-    transactionSaved: 'ವ್ಯವಹಾರ ಯಶಸ್ವಿಯಾಗಿ ಉಳಿಸಲಾಗಿದೆ!'
+    total: 'ಒಟ್ಟು',
   }
 };
 
@@ -114,7 +122,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export const useLanguage = () => {
   const context = useContext(LanguageContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useLanguage must be used within a LanguageProvider');
   }
   return context;
@@ -123,28 +131,12 @@ export const useLanguage = () => {
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguage] = useState<'en' | 'kn'>('en');
 
-  useEffect(() => {
-    const storedLanguage = localStorage.getItem('vyapaar_language') as 'en' | 'kn';
-    if (storedLanguage) {
-      setLanguage(storedLanguage);
-    }
-  }, []);
-
-  const handleSetLanguage = (lang: 'en' | 'kn') => {
-    setLanguage(lang);
-    localStorage.setItem('vyapaar_language', lang);
-  };
-
   const t = (key: string): string => {
-    return translations[language][key] || key;
+    return translations[language][key as keyof typeof translations['en']] || key;
   };
 
   return (
-    <LanguageContext.Provider value={{
-      language,
-      setLanguage: handleSetLanguage,
-      t
-    }}>
+    <LanguageContext.Provider value={{ language, setLanguage, t }}>
       {children}
     </LanguageContext.Provider>
   );

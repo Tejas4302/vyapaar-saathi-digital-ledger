@@ -1,93 +1,86 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, Calculator, Users, Package, TrendingUp } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { Globe } from 'lucide-react';
 
 interface WelcomeScreenProps {
   onGetStarted: () => void;
 }
 
 const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onGetStarted }) => {
-  const [currentSlide, setCurrentSlide] = useState(0);
-
-  const slides = [
-    {
-      icon: Calculator,
-      title: "Digitize your daily accounts in seconds!",
-      subtitle: "Calculator-first interface that feels familiar",
-      color: "text-primary"
-    },
-    {
-      icon: Users,
-      title: "Track udhaar easily!",
-      subtitle: "Never forget who owes what with smart customer ledger",
-      color: "text-accent"
-    },
-    {
-      icon: Package,
-      title: "Manage stock effortlessly!",
-      subtitle: "Keep track of inventory with low-stock alerts",
-      color: "text-success"
-    },
-    {
-      icon: TrendingUp,
-      title: "Grow your business!",
-      subtitle: "Get insights and analytics to boost profits",
-      color: "text-primary"
-    }
-  ];
-
-  const nextSlide = () => {
-    if (currentSlide < slides.length - 1) {
-      setCurrentSlide(currentSlide + 1);
-    } else {
-      onGetStarted();
-    }
-  };
-
-  const CurrentIcon = slides[currentSlide].icon;
+  const { t, language, setLanguage } = useLanguage();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary to-blue-800 flex flex-col items-center justify-center px-6 py-8">
-      <div className="text-center mb-12">
-        <div className="w-24 h-24 bg-white rounded-3xl flex items-center justify-center mb-6 mx-auto shadow-xl">
-          <Calculator className="w-12 h-12 text-primary" />
-        </div>
-        <h1 className="text-3xl font-bold text-white mb-2">VyapaarSetu</h1>
-        <p className="text-blue-100 text-lg">आपके व्यापार का डिजिटल पुल</p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
+      {/* Language Selector */}
+      <div className="flex justify-end p-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setLanguage(language === 'en' ? 'kn' : 'en')}
+          className="flex items-center gap-2"
+        >
+          <Globe className="w-4 h-4" />
+          {language === 'en' ? 'ಕನ್ನಡ' : 'English'}
+        </Button>
       </div>
 
-      <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl animate-scale-in">
-        <div className="text-center mb-8">
-          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 ${slides[currentSlide].color === 'text-primary' ? 'bg-blue-50' : slides[currentSlide].color === 'text-accent' ? 'bg-orange-50' : 'bg-green-50'}`}>
-            <CurrentIcon className={`w-8 h-8 ${slides[currentSlide].color}`} />
+      <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+        {/* Logo */}
+        <div className="mb-8">
+          <img 
+            src="/lovable-uploads/592c8570-e687-4d0b-b5c3-abd42466406b.png" 
+            alt="VyapaarSetu Logo" 
+            className="w-32 h-32 mx-auto rounded-3xl shadow-lg"
+          />
+        </div>
+
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          {t('appName')}
+        </h1>
+        
+        <p className="text-lg text-gray-600 mb-8 max-w-md">
+          {language === 'en' 
+            ? 'आपके व्यापार का डिजिटल युग' 
+            : 'ನಿಮ್ಮ ವ್ಯಾಪಾರದ ಡಿಜಿಟಲ್ ಯುಗ'
+          }
+        </p>
+
+        {/* Feature highlights */}
+        <div className="mb-12 space-y-4 max-w-sm">
+          <div className="flex items-center gap-3 p-4 bg-white rounded-xl shadow-sm">
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <img 
+                src="/lovable-uploads/592c8570-e687-4d0b-b5c3-abd42466406b.png" 
+                alt="Calculator" 
+                className="w-8 h-8 rounded"
+              />
+            </div>
+            <div className="text-left">
+              <h3 className="font-semibold text-gray-900">
+                {language === 'en' ? 'Digitize your daily accounts in seconds!' : 'ಸೆಕೆಂಡುಗಳಲ್ಲಿ ನಿಮ್ಮ ದೈನಂದಿನ ಖಾತೆಗಳನ್ನು ಡಿಜಿಟೈಜ್ ಮಾಡಿ!'}
+              </h3>
+              <p className="text-sm text-gray-600">
+                {language === 'en' ? 'Calculator-first interface that feels familiar' : 'ಪರಿಚಿತವಾಗಿ ಭಾಸವಾಗುವ ಕ್ಯಾಲ್ಕುಲೇಟರ್-ಪ್ರಥಮ ಇಂಟರ್ಫೇಸ್'}
+              </p>
+            </div>
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">
-            {slides[currentSlide].title}
-          </h2>
-          <p className="text-gray-600 text-sm">
-            {slides[currentSlide].subtitle}
-          </p>
         </div>
 
-        <div className="flex justify-center mb-6">
-          {slides.map((_, index) => (
-            <div
-              key={index}
-              className={`w-2 h-2 rounded-full mx-1 transition-all duration-300 ${
-                index === currentSlide ? 'bg-primary w-6' : 'bg-gray-200'
-              }`}
-            />
-          ))}
-        </div>
-
-        <Button
-          onClick={nextSlide}
-          className="mobile-button w-full bg-primary hover:bg-blue-800"
+        <Button 
+          onClick={onGetStarted}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 text-lg rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105"
         >
-          {currentSlide === slides.length - 1 ? "Let's Start!" : "Next"}
-          <ChevronRight className="w-5 h-5 ml-2" />
+          {t('getStarted')}
         </Button>
+
+        <div className="mt-8 flex space-x-2">
+          <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+          <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+          <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+          <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+        </div>
       </div>
     </div>
   );
