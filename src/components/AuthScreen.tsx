@@ -4,213 +4,257 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Mail, Phone, User, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
+import { Mail, Phone, User, Globe } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
 
 const AuthScreen: React.FC = () => {
-  const { login, signupWithEmail, signupWithPhone } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const { sendOTP, verifyOTP, login, isLoading } = useAuth();
+  const { t, language, setLanguage } = useLanguage();
+  const [step, setStep] = useState<'input' | 'verify'>('input');
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [emailOrPhone, setEmailOrPhone] = useState('');
+  const [name, setName] = useState('');
+  const [otp, setOtp] = useState('');
 
-  const [loginData, setLoginData] = useState({
-    email: '',
-    password: ''
-  });
+  const isEmail = emailOrPhone.includes('@');
+  const isValidPhone = /^[6-9]\d{9}$/.test(emailOrPhone);
+  const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailOrPhone);
 
-  const [signupData, setSignupData] = useState({
-    name: '',
-    emailOrPhone: '',
-    password: '',
-    confirmPassword: ''
-  });
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    try {
-      await login(loginData.email, loginData.password);
-      toast.success('Welcome back to VyapaarSetu!');
-    } catch (error) {
-      toast.error('Login failed. Please try again.');
+  const handleSendOTP = async () => {
+    if (!isValidEmail && !isValidPhone) {
+      toast.error('Please enter a valid email or 10-digit phone number');
+      return;
     }
-    setIsLoading(false);
+
+    const result = await sendOTP(emailOrPhone);
+    if (result.success) {
+      toast.success(t('otpSent'));
+      setStep('verify');
+    } else {
+      toast.error(result.message);
+    }
   };
 
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (signupData.password !== signupData.confirmPassword) {
-      toast.error('Passwords do not match');
+  const handleVerifyOTP = async () => {
+    if (otp.length !== 6) {
+      toast.error('Please enter a 6-digit OTP');
       return;
     }
 
-    if (signupData.password.length < 6) {
-      toast.error('Password must be at least 6 characters');
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const isEmail = signupData.emailOrPhone.includes('@');
-      
-      if (isEmail) {
-        await signupWithEmail(signupData.emailOrPhone, signupData.password, signupData.name);
-      } else {
-        await signupWithPhone(signupData.emailOrPhone, signupData.name);
+    if (isSignUp) {
+      if (!name.trim()) {
+        toast.error('Please enter your name');
+        return;
       }
-      
-      toast.success('Account created successfully! Please login.');
-      // Reset form and switch to login tab
-      setSignupData({ name: '', emailOrPhone: '', password: '', confirmPassword: '' });
-    } catch (error) {
-      toast.error('Signup failed. Please try again.');
+      const result = await verifyOTP(emailOrPhone, otp, name);
+      if (result.success) {
+        toast.success(t('accountCreated'));
+      } else {
+        toast.error(result.message);
+      }
+    } else {
+      const result = await login(emailOrPhone, otp);
+      if (result.success) {
+        toast.success(t('loginSuccessful'));
+      } else {
+        toast.error(result.message);
+      }
     }
-    setIsLoading(false);
+  };
+
+  const resetForm = () => {
+    setStep('input');
+    setEmailOrPhone('');
+    setName('');
+    setOtp('');
   };
 
   return (
     <div className="min-h-screen bg-muted flex flex-col items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
+        {/* Language Selector */}
+        <div className="flex justify-end mb-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setLanguage(language === 'en' ? 'kn' : 'en')}
+            className="flex items-center gap-2"
+          >
+            <Globe className="w-4 h-4" />
+            {language === 'en' ? 'ಕನ್ನಡ' : 'English'}
+          </Button>
+        </div>
+
+        {/* Logo */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-primary mb-2">Welcome to VyapaarSetu</h1>
+          <div className="mb-4">
+            <img 
+              src="/lovable-uploads/592c8570-e687-4d0b-b5c3-abd42466406b.png" 
+              alt="VyapaarSetu Logo" 
+              className="w-24 h-24 mx-auto rounded-full"
+            />
+          </div>
+          <h1 className="text-2xl font-bold text-primary mb-2">{t('welcome')} {t('appName')}</h1>
           <p className="text-gray-600">Start managing your business digitally</p>
         </div>
 
         <Card className="p-6">
-          <Tabs defaultValue="login" className="w-full">
+          <Tabs value={isSignUp ? 'signup' : 'login'} onValueChange={(value) => {
+            setIsSignUp(value === 'signup');
+            resetForm();
+          }} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsTrigger value="login">{t('login')}</TabsTrigger>
+              <TabsTrigger value="signup">{t('signUp')}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="login" className="space-y-4">
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Email</label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <Input
-                      type="email"
-                      placeholder="Enter your email"
-                      value={loginData.email}
-                      onChange={(e) => setLoginData({...loginData, email: e.target.value})}
-                      className="pl-10"
-                      required
-                    />
+              {step === 'input' ? (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      {t('email')} / {t('phone')}
+                    </label>
+                    <div className="relative">
+                      {isEmail ? (
+                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      ) : (
+                        <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      )}
+                      <Input
+                        type="text"
+                        placeholder={t('enterEmailOrPhone')}
+                        value={emailOrPhone}
+                        onChange={(e) => setEmailOrPhone(e.target.value)}
+                        className="pl-10"
+                        required
+                      />
+                    </div>
                   </div>
+                  <Button
+                    onClick={handleSendOTP}
+                    className="mobile-button w-full bg-primary hover:bg-blue-800"
+                    disabled={isLoading || (!isValidEmail && !isValidPhone)}
+                  >
+                    {isLoading ? 'Sending...' : t('sendOTP')}
+                  </Button>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Password</label>
-                  <div className="relative">
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Enter your password"
-                      value={loginData.password}
-                      onChange={(e) => setLoginData({...loginData, password: e.target.value})}
-                      className="pr-10"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
+              ) : (
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <p className="text-sm text-gray-600 mb-4">
+                      OTP sent to {emailOrPhone}
+                    </p>
+                    <InputOTP value={otp} onChange={setOtp} maxLength={6}>
+                      <InputOTPGroup>
+                        <InputOTPSlot index={0} />
+                        <InputOTPSlot index={1} />
+                        <InputOTPSlot index={2} />
+                        <InputOTPSlot index={3} />
+                        <InputOTPSlot index={4} />
+                        <InputOTPSlot index={5} />
+                      </InputOTPGroup>
+                    </InputOTP>
                   </div>
+                  <Button
+                    onClick={handleVerifyOTP}
+                    className="mobile-button w-full bg-primary hover:bg-blue-800"
+                    disabled={isLoading || otp.length !== 6}
+                  >
+                    {isLoading ? 'Verifying...' : t('verifyOTP')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={resetForm}
+                    className="w-full"
+                  >
+                    Back
+                  </Button>
                 </div>
-                <Button
-                  type="submit"
-                  className="mobile-button w-full bg-primary hover:bg-blue-800"
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Signing in...' : 'Sign In'}
-                </Button>
-              </form>
+              )}
             </TabsContent>
 
             <TabsContent value="signup" className="space-y-4">
-              <form onSubmit={handleSignup} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Name</label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <Input
-                      type="text"
-                      placeholder="Enter your name"
-                      value={signupData.name}
-                      onChange={(e) => setSignupData({...signupData, name: e.target.value})}
-                      className="pl-10"
-                      required
-                    />
+              {step === 'input' ? (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">{t('name')}</label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <Input
+                        type="text"
+                        placeholder={t('enterName')}
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="pl-10"
+                        required
+                      />
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Email or Phone</label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <Input
-                      type="text"
-                      placeholder="Enter email or phone number"
-                      value={signupData.emailOrPhone}
-                      onChange={(e) => setSignupData({...signupData, emailOrPhone: e.target.value})}
-                      className="pl-10"
-                      required
-                    />
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      {t('email')} / {t('phone')}
+                    </label>
+                    <div className="relative">
+                      {isEmail ? (
+                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      ) : (
+                        <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      )}
+                      <Input
+                        type="text"
+                        placeholder={t('enterEmailOrPhone')}
+                        value={emailOrPhone}
+                        onChange={(e) => setEmailOrPhone(e.target.value)}
+                        className="pl-10"
+                        required
+                      />
+                    </div>
                   </div>
+                  <Button
+                    onClick={handleSendOTP}
+                    className="mobile-button w-full bg-primary hover:bg-blue-800"
+                    disabled={isLoading || !name.trim() || (!isValidEmail && !isValidPhone)}
+                  >
+                    {isLoading ? 'Sending...' : t('sendOTP')}
+                  </Button>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Password</label>
-                  <div className="relative">
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Create a password"
-                      value={signupData.password}
-                      onChange={(e) => setSignupData({...signupData, password: e.target.value})}
-                      className="pr-10"
-                      required
-                      minLength={6}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
+              ) : (
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <p className="text-sm text-gray-600 mb-4">
+                      OTP sent to {emailOrPhone}
+                    </p>
+                    <InputOTP value={otp} onChange={setOtp} maxLength={6}>
+                      <InputOTPGroup>
+                        <InputOTPSlot index={0} />
+                        <InputOTPSlot index={1} />
+                        <InputOTPSlot index={2} />
+                        <InputOTPSlot index={3} />
+                        <InputOTPSlot index={4} />
+                        <InputOTPSlot index={5} />
+                      </InputOTPGroup>
+                    </InputOTP>
                   </div>
+                  <Button
+                    onClick={handleVerifyOTP}
+                    className="mobile-button w-full bg-primary hover:bg-blue-800"
+                    disabled={isLoading || otp.length !== 6}
+                  >
+                    {isLoading ? 'Creating Account...' : t('verifyOTP')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={resetForm}
+                    className="w-full"
+                  >
+                    Back
+                  </Button>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Confirm Password</label>
-                  <div className="relative">
-                    <Input
-                      type={showConfirmPassword ? "text" : "password"}
-                      placeholder="Confirm your password"
-                      value={signupData.confirmPassword}
-                      onChange={(e) => setSignupData({...signupData, confirmPassword: e.target.value})}
-                      className="pr-10"
-                      required
-                      minLength={6}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                    >
-                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
-                <Button
-                  type="submit"
-                  className="mobile-button w-full bg-primary hover:bg-blue-800"
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Creating Account...' : 'Create Account'}
-                </Button>
-              </form>
+              )}
             </TabsContent>
           </Tabs>
         </Card>

@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Calculator, BookOpen, Users, Package, BarChart3, User } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface BottomNavProps {
   activeTab: string;
@@ -8,17 +9,19 @@ interface BottomNavProps {
 }
 
 const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) => {
+  const { t } = useLanguage();
+  
   const tabs = [
-    { id: 'calculator', icon: Calculator, label: 'Calculator' },
-    { id: 'ledger', icon: BookOpen, label: 'Ledger' },
-    { id: 'customers', icon: Users, label: 'Customers' },
-    { id: 'inventory', icon: Package, label: 'Inventory' },
-    { id: 'analytics', icon: BarChart3, label: 'Analytics' },
-    { id: 'profile', icon: User, label: 'Profile' },
+    { id: 'calculator', icon: Calculator, label: t('calculator') },
+    { id: 'ledger', icon: BookOpen, label: t('ledger') },
+    { id: 'customers', icon: Users, label: t('customers') },
+    { id: 'inventory', icon: Package, label: t('inventory') },
+    { id: 'analytics', icon: BarChart3, label: t('analytics') },
+    { id: 'profile', icon: User, label: t('profile') },
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-1 py-2 safe-area-bottom">
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-1 py-2 safe-area-bottom z-50">
       <div className="flex justify-around">
         {tabs.map((tab) => {
           const Icon = tab.icon;

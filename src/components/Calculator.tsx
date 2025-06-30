@@ -2,8 +2,9 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ArrowUp, ArrowDown, Save, RotateCcw } from 'lucide-react';
+import { ArrowUp, ArrowDown, Save } from 'lucide-react';
 import { useData } from '@/contexts/DataContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
 
 const Calculator: React.FC = () => {
@@ -14,6 +15,7 @@ const Calculator: React.FC = () => {
   const [transactionType, setTransactionType] = useState<'cash_in' | 'cash_out'>('cash_in');
   
   const { addTransaction, getTodaysSummary } = useData();
+  const { t } = useLanguage();
   const todaysSummary = getTodaysSummary();
 
   const inputNumber = (num: string) => {
@@ -106,13 +108,7 @@ const Calculator: React.FC = () => {
         paymentStatus: 'paid'
       });
       
-      toast.success(
-        `₹${amount} saved as ${transactionType === 'cash_in' ? 'Sale' : 'Expense'}!`,
-        {
-          description: 'Transaction recorded in your ledger',
-        }
-      );
-      
+      toast.success(t('transactionSaved'));
       clear();
     } else {
       toast.error('Please enter a valid amount');
@@ -130,21 +126,21 @@ const Calculator: React.FC = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto p-4 space-y-4">
+    <div className="max-w-md mx-auto p-4 space-y-4 pb-24">
       {/* Summary Card */}
       <Card className="p-4 bg-gradient-to-r from-primary to-blue-700 text-white">
-        <h3 className="text-sm font-medium mb-2">Today's Summary</h3>
+        <h3 className="text-sm font-medium mb-2">{t('todaysSummary')}</h3>
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
-            <p className="text-xs opacity-80">Sales</p>
+            <p className="text-xs opacity-80">{t('sales')}</p>
             <p className="font-semibold">{formatCurrency(todaysSummary.sales)}</p>
           </div>
           <div>
-            <p className="text-xs opacity-80">Expenses</p>
+            <p className="text-xs opacity-80">{t('expenses')}</p>
             <p className="font-semibold">{formatCurrency(todaysSummary.expenses)}</p>
           </div>
           <div>
-            <p className="text-xs opacity-80">Net</p>
+            <p className="text-xs opacity-80">{t('net')}</p>
             <p className="font-semibold">{formatCurrency(todaysSummary.net)}</p>
           </div>
         </div>
@@ -164,7 +160,7 @@ const Calculator: React.FC = () => {
               className="flex-1"
             >
               <ArrowUp className="w-4 h-4 mr-1" />
-              Cash In
+              {t('cashIn')}
             </Button>
             <Button
               variant={transactionType === 'cash_out' ? 'default' : 'outline'}
@@ -173,7 +169,7 @@ const Calculator: React.FC = () => {
               className="flex-1"
             >
               <ArrowDown className="w-4 h-4 mr-1" />
-              Cash Out
+              {t('cashOut')}
             </Button>
           </div>
         </div>
@@ -298,7 +294,7 @@ const Calculator: React.FC = () => {
             .
           </Button>
           
-          {/* Sixth Row - Equals and Save */}
+          {/* Sixth Row - Equals */}
           <Button
             onClick={performCalculation}
             className="calculator-button calculator-action col-span-2"
@@ -312,7 +308,7 @@ const Calculator: React.FC = () => {
           className="mobile-button w-full mt-4 bg-success hover:bg-green-600"
         >
           <Save className="w-5 h-5 mr-2" />
-          Save Transaction
+          {t('saveTransaction')}
         </Button>
       </Card>
     </div>
