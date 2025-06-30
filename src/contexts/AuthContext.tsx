@@ -6,7 +6,8 @@ interface User {
   name: string;
   email?: string;
   phone?: string;
-  language: string;
+  storeName?: string;
+  profilePhoto?: string;
 }
 
 interface AuthContextType {
@@ -15,7 +16,6 @@ interface AuthContextType {
   signupWithEmail: (email: string, password: string, name: string) => Promise<void>;
   signupWithPhone: (phone: string, name: string) => Promise<void>;
   logout: () => void;
-  setLanguage: (language: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -45,7 +45,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       id: '1',
       name: 'Shop Owner',
       email,
-      language: 'english'
+      storeName: 'My Store'
     };
     setUser(userData);
     localStorage.setItem('vyapaar_user', JSON.stringify(userData));
@@ -56,8 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const userData = {
       id: Math.random().toString(36).substr(2, 9),
       name,
-      email,
-      language: 'english'
+      email
     };
     setUser(userData);
     localStorage.setItem('vyapaar_user', JSON.stringify(userData));
@@ -68,8 +67,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const userData = {
       id: Math.random().toString(36).substr(2, 9),
       name,
-      phone,
-      language: 'english'
+      phone
     };
     setUser(userData);
     localStorage.setItem('vyapaar_user', JSON.stringify(userData));
@@ -80,22 +78,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('vyapaar_user');
   };
 
-  const setLanguage = (language: string) => {
-    if (user) {
-      const updatedUser = { ...user, language };
-      setUser(updatedUser);
-      localStorage.setItem('vyapaar_user', JSON.stringify(updatedUser));
-    }
-  };
-
   return (
     <AuthContext.Provider value={{
       user,
       login,
       signupWithEmail,
       signupWithPhone,
-      logout,
-      setLanguage
+      logout
     }}>
       {children}
     </AuthContext.Provider>

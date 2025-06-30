@@ -2,9 +2,10 @@
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowUp, ArrowDown, Filter, Download, Calendar } from 'lucide-react';
+import { ArrowUp, ArrowDown, Download, Calendar } from 'lucide-react';
 import { useData } from '@/contexts/DataContext';
 import { format, isToday, isThisWeek, isThisMonth } from 'date-fns';
+import { toast } from 'sonner';
 
 const LedgerScreen: React.FC = () => {
   const { transactions } = useData();
@@ -40,13 +41,41 @@ const LedgerScreen: React.FC = () => {
   };
 
   const exportLedger = () => {
-    // In a real app, this would generate a PDF or share via WhatsApp
-    const data = filteredTransactions.map(t => 
-      `${format(t.date, 'dd/MM/yyyy HH:mm')} | ${t.type === 'cash_in' ? 'IN' : 'OUT'} | ${formatCurrency(t.amount)} | ${t.paymentStatus.toUpperCase()}`
-    ).join('\n');
-    
-    console.log('Ledger Export:', data);
-    alert('Export feature would share via WhatsApp in the mobile app');
+    try {
+      // Create CSV content
+      const headers = ['Date', 'Type', 'Amount', 'Status', 'Notes'];
+      const csvContent = [
+        headers.join(','),
+        ...filteredTransactions.map(t => [
+          format(t.date, 'dd/MM/yyyy HH:mm'),
+          t.type === 'cash_in' ? 'Sale' : 'Expense',
+          t.amount,
+          t.paymentStatus,
+          t.note || ''
+        ].join(','))
+      ].join('\n');
+
+      // Create and download file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      
+      if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `ledger_${format(new Date(), 'yyyy-MM-dd')}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        toast.success('Ledger exported successfully!');
+      } else {
+        toast.error('Export not supported on this device');
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error('Failed to export ledger');
+    }
   };
 
   return (
@@ -95,9 +124,10 @@ const LedgerScreen: React.FC = () => {
         onClick={exportLedger}
         variant="outline"
         className="w-full"
+        disabled={filteredTransactions.length === 0}
       >
         <Download className="w-4 h-4 mr-2" />
-        Export Ledger
+        Export Ledger ({filteredTransactions.length} transactions)
       </Button>
 
       {/* Transactions List */}

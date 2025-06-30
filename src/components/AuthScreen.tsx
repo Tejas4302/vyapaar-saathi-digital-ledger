@@ -4,15 +4,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Mail, Phone, User, Globe } from 'lucide-react';
+import { Mail, Phone, User, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
 const AuthScreen: React.FC = () => {
-  const { login, signupWithEmail, signupWithPhone, setLanguage } = useAuth();
+  const { login, signupWithEmail, signupWithPhone } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState('english');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [loginData, setLoginData] = useState({
     email: '',
@@ -21,25 +21,16 @@ const AuthScreen: React.FC = () => {
 
   const [signupData, setSignupData] = useState({
     name: '',
-    email: '',
-    phone: '',
-    password: ''
+    emailOrPhone: '',
+    password: '',
+    confirmPassword: ''
   });
-
-  const languages = [
-    { value: 'english', label: 'English' },
-    { value: 'hindi', label: 'हिंदी' },
-    { value: 'telugu', label: 'తెలుగు' },
-    { value: 'kannada', label: 'ಕನ್ನಡ' },
-    { value: 'tamil', label: 'தமிழ்' }
-  ];
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
       await login(loginData.email, loginData.password);
-      setLanguage(selectedLanguage);
       toast.success('Welcome back to VyapaarSetu!');
     } catch (error) {
       toast.error('Login failed. Please try again.');
@@ -47,26 +38,32 @@ const AuthScreen: React.FC = () => {
     setIsLoading(false);
   };
 
-  const handleEmailSignup = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    try {
-      await signupWithEmail(signupData.email, signupData.password, signupData.name);
-      setLanguage(selectedLanguage);
-      toast.success('Account created successfully!');
-    } catch (error) {
-      toast.error('Signup failed. Please try again.');
+    
+    if (signupData.password !== signupData.confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
     }
-    setIsLoading(false);
-  };
 
-  const handlePhoneSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
+    if (signupData.password.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+
     setIsLoading(true);
     try {
-      await signupWithPhone(signupData.phone, signupData.name);
-      setLanguage(selectedLanguage);
-      toast.success('Account created successfully!');
+      const isEmail = signupData.emailOrPhone.includes('@');
+      
+      if (isEmail) {
+        await signupWithEmail(signupData.emailOrPhone, signupData.password, signupData.name);
+      } else {
+        await signupWithPhone(signupData.emailOrPhone, signupData.name);
+      }
+      
+      toast.success('Account created successfully! Please login.');
+      // Reset form and switch to login tab
+      setSignupData({ name: '', emailOrPhone: '', password: '', confirmPassword: '' });
     } catch (error) {
       toast.error('Signup failed. Please try again.');
     }
@@ -82,25 +79,6 @@ const AuthScreen: React.FC = () => {
         </div>
 
         <Card className="p-6">
-          <div className="mb-6">
-            <label className="block text-sm font-medium mb-2">
-              <Globe className="w-4 h-4 inline mr-2" />
-              Select Language
-            </label>
-            <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {languages.map((lang) => (
-                  <SelectItem key={lang.value} value={lang.value}>
-                    {lang.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">Login</TabsTrigger>
@@ -125,13 +103,23 @@ const AuthScreen: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Password</label>
-                  <Input
-                    type="password"
-                    placeholder="Enter your password"
-                    value={loginData.password}
-                    onChange={(e) => setLoginData({...loginData, password: e.target.value})}
-                    required
-                  />
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Enter your password"
+                      value={loginData.password}
+                      onChange={(e) => setLoginData({...loginData, password: e.target.value})}
+                      className="pr-10"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
                 <Button
                   type="submit"
@@ -144,102 +132,85 @@ const AuthScreen: React.FC = () => {
             </TabsContent>
 
             <TabsContent value="signup" className="space-y-4">
-              <Tabs defaultValue="email" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="email">Email</TabsTrigger>
-                  <TabsTrigger value="phone">Phone</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="email">
-                  <form onSubmit={handleEmailSignup} className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Name</label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                        <Input
-                          type="text"
-                          placeholder="Enter your name"
-                          value={signupData.name}
-                          onChange={(e) => setSignupData({...signupData, name: e.target.value})}
-                          className="pl-10"
-                          required
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Email</label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                        <Input
-                          type="email"
-                          placeholder="Enter your email"
-                          value={signupData.email}
-                          onChange={(e) => setSignupData({...signupData, email: e.target.value})}
-                          className="pl-10"
-                          required
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Password</label>
-                      <Input
-                        type="password"
-                        placeholder="Create a password"
-                        value={signupData.password}
-                        onChange={(e) => setSignupData({...signupData, password: e.target.value})}
-                        required
-                      />
-                    </div>
-                    <Button
-                      type="submit"
-                      className="mobile-button w-full bg-primary hover:bg-blue-800"
-                      disabled={isLoading}
+              <form onSubmit={handleSignup} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Name</label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <Input
+                      type="text"
+                      placeholder="Enter your name"
+                      value={signupData.name}
+                      onChange={(e) => setSignupData({...signupData, name: e.target.value})}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Email or Phone</label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <Input
+                      type="text"
+                      placeholder="Enter email or phone number"
+                      value={signupData.emailOrPhone}
+                      onChange={(e) => setSignupData({...signupData, emailOrPhone: e.target.value})}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Password</label>
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Create a password"
+                      value={signupData.password}
+                      onChange={(e) => setSignupData({...signupData, password: e.target.value})}
+                      className="pr-10"
+                      required
+                      minLength={6}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
                     >
-                      {isLoading ? 'Creating Account...' : 'Create Account'}
-                    </Button>
-                  </form>
-                </TabsContent>
-
-                <TabsContent value="phone">
-                  <form onSubmit={handlePhoneSignup} className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Name</label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                        <Input
-                          type="text"
-                          placeholder="Enter your name"
-                          value={signupData.name}
-                          onChange={(e) => setSignupData({...signupData, name: e.target.value})}
-                          className="pl-10"
-                          required
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Phone Number</label>
-                      <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                        <Input
-                          type="tel"
-                          placeholder="Enter your phone number"
-                          value={signupData.phone}
-                          onChange={(e) => setSignupData({...signupData, phone: e.target.value})}
-                          className="pl-10"
-                          required
-                        />
-                      </div>
-                    </div>
-                    <Button
-                      type="submit"
-                      className="mobile-button w-full bg-primary hover:bg-blue-800"
-                      disabled={isLoading}
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Confirm Password</label>
+                  <div className="relative">
+                    <Input
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="Confirm your password"
+                      value={signupData.confirmPassword}
+                      onChange={(e) => setSignupData({...signupData, confirmPassword: e.target.value})}
+                      className="pr-10"
+                      required
+                      minLength={6}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
                     >
-                      {isLoading ? 'Creating Account...' : 'Create Account'}
-                    </Button>
-                  </form>
-                </TabsContent>
-              </Tabs>
+                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+                <Button
+                  type="submit"
+                  className="mobile-button w-full bg-primary hover:bg-blue-800"
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Creating Account...' : 'Create Account'}
+                </Button>
+              </form>
             </TabsContent>
           </Tabs>
         </Card>

@@ -25,6 +25,15 @@ const Calculator: React.FC = () => {
     }
   };
 
+  const inputDecimal = () => {
+    if (waitingForOperand) {
+      setDisplay('0.');
+      setWaitingForOperand(false);
+    } else if (display.indexOf('.') === -1) {
+      setDisplay(display + '.');
+    }
+  };
+
   const inputOperation = (nextOperation: string) => {
     const inputValue = parseFloat(display);
 
@@ -51,7 +60,7 @@ const Calculator: React.FC = () => {
       case '×':
         return firstValue * secondValue;
       case '÷':
-        return firstValue / secondValue;
+        return secondValue !== 0 ? firstValue / secondValue : firstValue;
       default:
         return secondValue;
     }
@@ -74,6 +83,18 @@ const Calculator: React.FC = () => {
     setPreviousValue(null);
     setOperation(null);
     setWaitingForOperand(false);
+  };
+
+  const clearEntry = () => {
+    setDisplay('0');
+  };
+
+  const backspace = () => {
+    if (display.length > 1) {
+      setDisplay(display.slice(0, -1));
+    } else {
+      setDisplay('0');
+    }
   };
 
   const saveTransaction = () => {
@@ -102,6 +123,12 @@ const Calculator: React.FC = () => {
     return `₹${amount.toLocaleString('en-IN')}`;
   };
 
+  const formatDisplay = (value: string) => {
+    const num = parseFloat(value);
+    if (isNaN(num)) return '₹0';
+    return formatCurrency(num);
+  };
+
   return (
     <div className="max-w-md mx-auto p-4 space-y-4">
       {/* Summary Card */}
@@ -126,7 +153,9 @@ const Calculator: React.FC = () => {
       {/* Calculator Display */}
       <Card className="p-4">
         <div className="text-right mb-4">
-          <div className="text-3xl font-bold text-primary mb-2">{formatCurrency(parseFloat(display))}</div>
+          <div className="text-3xl font-bold text-primary mb-2 min-h-[1.2em] bg-gray-50 p-3 rounded border">
+            {formatDisplay(display)}
+          </div>
           <div className="flex gap-2">
             <Button
               variant={transactionType === 'cash_in' ? 'default' : 'outline'}
@@ -150,26 +179,31 @@ const Calculator: React.FC = () => {
         </div>
 
         {/* Calculator Buttons */}
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-4 gap-2">
           {/* First Row */}
           <Button
             onClick={clear}
-            className="calculator-button calculator-action col-span-2"
+            className="calculator-button calculator-action text-sm"
           >
-            <RotateCcw className="w-5 h-5 mr-1" />
-            Clear
+            AC
+          </Button>
+          <Button
+            onClick={clearEntry}
+            className="calculator-button calculator-action text-sm"
+          >
+            CE
+          </Button>
+          <Button
+            onClick={backspace}
+            className="calculator-button calculator-action text-sm"
+          >
+            ⌫
           </Button>
           <Button
             onClick={() => inputOperation('÷')}
             className="calculator-button calculator-operator"
           >
             ÷
-          </Button>
-          <Button
-            onClick={() => inputOperation('×')}
-            className="calculator-button calculator-operator"
-          >
-            ×
           </Button>
 
           {/* Second Row */}
@@ -192,10 +226,10 @@ const Calculator: React.FC = () => {
             9
           </Button>
           <Button
-            onClick={() => inputOperation('-')}
+            onClick={() => inputOperation('×')}
             className="calculator-button calculator-operator"
           >
-            -
+            ×
           </Button>
 
           {/* Third Row */}
@@ -218,10 +252,10 @@ const Calculator: React.FC = () => {
             6
           </Button>
           <Button
-            onClick={() => inputOperation('+')}
+            onClick={() => inputOperation('-')}
             className="calculator-button calculator-operator"
           >
-            +
+            -
           </Button>
 
           {/* Fourth Row */}
@@ -244,10 +278,10 @@ const Calculator: React.FC = () => {
             3
           </Button>
           <Button
-            onClick={performCalculation}
-            className="calculator-button calculator-action row-span-2"
+            onClick={() => inputOperation('+')}
+            className="calculator-button calculator-operator row-span-2"
           >
-            =
+            +
           </Button>
 
           {/* Fifth Row */}
@@ -258,10 +292,18 @@ const Calculator: React.FC = () => {
             0
           </Button>
           <Button
-            onClick={() => inputNumber('.')}
+            onClick={inputDecimal}
             className="calculator-button calculator-number"
           >
             .
+          </Button>
+          
+          {/* Sixth Row - Equals and Save */}
+          <Button
+            onClick={performCalculation}
+            className="calculator-button calculator-action col-span-2"
+          >
+            =
           </Button>
         </div>
 

@@ -8,6 +8,7 @@ import LedgerScreen from '@/components/LedgerScreen';
 import CustomersScreen from '@/components/CustomersScreen';
 import InventoryScreen from '@/components/InventoryScreen';
 import AnalyticsScreen from '@/components/AnalyticsScreen';
+import ProfileScreen from '@/components/ProfileScreen';
 import BottomNav from '@/components/BottomNav';
 
 const Index = () => {
@@ -38,6 +39,8 @@ const Index = () => {
         return <InventoryScreen />;
       case 'analytics':
         return <AnalyticsScreen />;
+      case 'profile':
+        return <ProfileScreen />;
       default:
         return <Calculator />;
     }

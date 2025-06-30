@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Calculator, BookOpen, Users, Package, BarChart3 } from 'lucide-react';
+import { Calculator, BookOpen, Users, Package, BarChart3, User } from 'lucide-react';
 
 interface BottomNavProps {
   activeTab: string;
@@ -14,10 +14,11 @@ const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) => {
     { id: 'customers', icon: Users, label: 'Customers' },
     { id: 'inventory', icon: Package, label: 'Inventory' },
     { id: 'analytics', icon: BarChart3, label: 'Analytics' },
+    { id: 'profile', icon: User, label: 'Profile' },
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-2 py-2 safe-area-bottom">
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-1 py-2 safe-area-bottom">
       <div className="flex justify-around">
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -27,13 +28,13 @@ const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) => {
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className={`flex flex-col items-center justify-center px-3 py-2 rounded-lg transition-all duration-200 ${
+              className={`flex flex-col items-center justify-center px-2 py-2 rounded-lg transition-all duration-200 ${
                 isActive 
                   ? 'bg-primary text-white' 
                   : 'text-gray-500 hover:text-primary hover:bg-gray-50'
               }`}
             >
-              <Icon className="w-5 h-5 mb-1" />
+              <Icon className="w-4 h-4 mb-1" />
               <span className="text-xs font-medium">{tab.label}</span>
             </button>
           );

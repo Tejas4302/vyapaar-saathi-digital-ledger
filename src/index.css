@@ -42,19 +42,19 @@
   }
   
   .calculator-button {
-    @apply h-16 w-16 rounded-xl text-xl font-semibold transition-all duration-200 active:scale-95;
+    @apply h-14 w-full rounded-lg text-lg font-semibold transition-all duration-200 active:scale-95 shadow-sm;
   }
   
   .calculator-number {
-    @apply bg-white border-2 border-gray-200 text-primary hover:bg-gray-50;
+    @apply bg-white border-2 border-gray-200 text-primary hover:bg-gray-50 hover:border-gray-300;
   }
   
   .calculator-operator {
-    @apply bg-accent text-white hover:bg-orange-600;
+    @apply bg-accent text-white hover:bg-orange-600 border-0;
   }
   
   .calculator-action {
-    @apply bg-primary text-white hover:bg-blue-800;
+    @apply bg-primary text-white hover:bg-blue-800 border-0;
   }
   
   .mobile-button {
