@@ -1,7 +1,9 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { User, Session } from '@supabase/supabase-js';
 
-interface User {
+interface UserProfile {
   id: string;
   name: string;
   email?: string;
@@ -12,10 +14,12 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
+  profile: UserProfile | null;
+  session: Session | null;
   login: (emailOrPhone: string, password: string) => Promise<{ success: boolean; message: string }>;
   signUp: (emailOrPhone: string, password: string, name: string, storeName?: string) => Promise<{ success: boolean; message: string }>;
   logout: () => void;
-  updateProfile: (updates: Partial<User>) => void;
+  updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -31,36 +35,97 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('vyapaar_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.id);
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          // Fetch user profile when user is authenticated
+          setTimeout(async () => {
+            await fetchUserProfile(session.user.id);
+          }, 0);
+        } else {
+          setProfile(null);
+          // Clear localStorage when user logs out
+          localStorage.removeItem('current_user_id');
+        }
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        setTimeout(async () => {
+          await fetchUserProfile(session.user.id);
+        }, 0);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
+
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return;
+      }
+
+      if (data) {
+        const userProfile: UserProfile = {
+          id: data.id,
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          storeName: data.store_name,
+          profilePhoto: data.profile_photo
+        };
+        setProfile(userProfile);
+        // Set user ID in localStorage for DataContext compatibility
+        localStorage.setItem('current_user_id', userId);
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
 
   const login = async (emailOrPhone: string, password: string): Promise<{ success: boolean; message: string }> => {
     setIsLoading(true);
     
     try {
-      // Get existing users
-      const existingUsers = JSON.parse(localStorage.getItem('vyapaar_users') || '[]');
-      
-      // Find user by email or phone
-      const foundUser = existingUsers.find((u: any) => 
-        (u.email === emailOrPhone || u.phone === emailOrPhone) && u.password === password
-      );
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: emailOrPhone.includes('@') ? emailOrPhone : `${emailOrPhone}@temp.com`,
+        password,
+      });
 
-      if (foundUser) {
-        const { password: _, ...userWithoutPassword } = foundUser;
-        setUser(userWithoutPassword);
-        localStorage.setItem('vyapaar_user', JSON.stringify(userWithoutPassword));
+      if (error) {
+        console.error('Login error:', error);
+        return { success: false, message: error.message || 'Login failed' };
+      }
+
+      if (data.user) {
         return { success: true, message: 'Login successful' };
       } else {
         return { success: false, message: 'Invalid credentials' };
       }
     } catch (error) {
+      console.error('Login error:', error);
       return { success: false, message: 'Login failed' };
     } finally {
       setIsLoading(false);
@@ -71,66 +136,77 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     
     try {
-      // Get existing users
-      const existingUsers = JSON.parse(localStorage.getItem('vyapaar_users') || '[]');
+      const email = emailOrPhone.includes('@') ? emailOrPhone : `${emailOrPhone}@temp.com`;
+      const redirectUrl = `${window.location.origin}/`;
       
-      // Check if user already exists
-      const userExists = existingUsers.some((u: any) => u.email === emailOrPhone || u.phone === emailOrPhone);
-      
-      if (userExists) {
-        return { success: false, message: 'User already exists' };
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            name,
+            phone: emailOrPhone.includes('@') ? undefined : emailOrPhone,
+            storeName: storeName || ''
+          }
+        }
+      });
+
+      if (error) {
+        console.error('Signup error:', error);
+        return { success: false, message: error.message || 'Sign up failed' };
       }
 
-      // Create new user
-      const newUser = {
-        id: `user_${Date.now()}`,
-        name,
-        storeName: storeName || '',
-        password,
-        ...(emailOrPhone.includes('@') ? { email: emailOrPhone } : { phone: emailOrPhone })
-      };
-
-      // Save to users array
-      existingUsers.push(newUser);
-      localStorage.setItem('vyapaar_users', JSON.stringify(existingUsers));
-
-      // Set current user (without password)
-      const { password: _, ...userWithoutPassword } = newUser;
-      setUser(userWithoutPassword);
-      localStorage.setItem('vyapaar_user', JSON.stringify(userWithoutPassword));
-
-      return { success: true, message: 'Account created successfully' };
+      if (data.user) {
+        return { success: true, message: 'Account created successfully' };
+      } else {
+        return { success: false, message: 'Sign up failed' };
+      }
     } catch (error) {
+      console.error('Signup error:', error);
       return { success: false, message: 'Sign up failed' };
     } finally {
       setIsLoading(false);
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('vyapaar_user');
+  const logout = async () => {
+    await supabase.auth.signOut();
   };
 
-  const updateProfile = (updates: Partial<User>) => {
-    if (user) {
-      const updatedUser = { ...user, ...updates };
-      setUser(updatedUser);
-      localStorage.setItem('vyapaar_user', JSON.stringify(updatedUser));
-      
-      // Also update in users array
-      const existingUsers = JSON.parse(localStorage.getItem('vyapaar_users') || '[]');
-      const userIndex = existingUsers.findIndex((u: any) => u.id === user.id);
-      if (userIndex !== -1) {
-        existingUsers[userIndex] = { ...existingUsers[userIndex], ...updates };
-        localStorage.setItem('vyapaar_users', JSON.stringify(existingUsers));
+  const updateProfile = async (updates: Partial<UserProfile>) => {
+    if (!user || !profile) return;
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          name: updates.name || profile.name,
+          email: updates.email || profile.email,
+          phone: updates.phone || profile.phone,
+          store_name: updates.storeName || profile.storeName,
+          profile_photo: updates.profilePhoto || profile.profilePhoto
+        })
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Error updating profile:', error);
+        throw error;
       }
+
+      // Update local profile state
+      setProfile(prev => prev ? { ...prev, ...updates } : null);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      throw error;
     }
   };
 
   return (
     <AuthContext.Provider value={{ 
       user, 
+      profile,
+      session,
       login, 
       signUp, 
       logout, 
