@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 export interface Transaction {
@@ -10,6 +9,7 @@ export interface Transaction {
   customerId?: string;
   itemId?: string;
   paymentStatus: 'paid' | 'udhaar';
+  paymentMode: 'cash' | 'online' | 'udhaar';
   userId: string; // Added user isolation
 }
 
