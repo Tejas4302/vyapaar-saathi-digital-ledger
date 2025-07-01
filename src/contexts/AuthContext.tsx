@@ -1,6 +1,5 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 
 interface User {
   id: string;
@@ -9,22 +8,22 @@ interface User {
   phone?: string;
   storeName?: string;
   profilePhoto?: string;
-  isVerified: boolean;
 }
 
 interface AuthContextType {
   user: User | null;
-  isLoading: boolean;
-  signUp: (emailOrPhone: string, password: string, name: string) => Promise<{ success: boolean; message: string }>;
   login: (emailOrPhone: string, password: string) => Promise<{ success: boolean; message: string }>;
+  signUp: (emailOrPhone: string, password: string, name: string, storeName?: string) => Promise<{ success: boolean; message: string }>;
   logout: () => void;
+  updateProfile: (updates: Partial<User>) => void;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
@@ -32,119 +31,111 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Clear all existing data to ensure fresh start
-    localStorage.clear();
-    setIsLoading(false);
+    const savedUser = localStorage.getItem('vyapaar_user');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
   }, []);
 
-  const signUp = async (emailOrPhone: string, password: string, name: string) => {
+  const login = async (emailOrPhone: string, password: string): Promise<{ success: boolean; message: string }> => {
     setIsLoading(true);
+    
     try {
-      // Validate mobile number format (exactly 10 digits)
-      if (!emailOrPhone.includes('@')) {
-        if (!/^[6-9]\d{9}$/.test(emailOrPhone)) {
-          setIsLoading(false);
-          return { success: false, message: 'Mobile number must be exactly 10 digits starting with 6-9' };
-        }
-      }
+      // Get existing users
+      const existingUsers = JSON.parse(localStorage.getItem('vyapaar_users') || '[]');
+      
+      // Find user by email or phone
+      const foundUser = existingUsers.find((u: any) => 
+        (u.email === emailOrPhone || u.phone === emailOrPhone) && u.password === password
+      );
 
-      // Simulate signup
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Create unique user ID
-      const userId = Math.random().toString(36).substr(2, 9);
-      
-      const userData = {
-        id: userId,
-        name,
-        ...(emailOrPhone.includes('@') ? { email: emailOrPhone } : { phone: emailOrPhone }),
-        isVerified: true
-      };
-      
-      setUser(userData);
-      
-      // Store user data with unique key
-      localStorage.setItem(`vyapaar_user_${userId}`, JSON.stringify(userData));
-      localStorage.setItem(`user_credentials_${userId}`, JSON.stringify({ emailOrPhone, password }));
-      localStorage.setItem('current_user_id', userId);
-      
-      setIsLoading(false);
-      return { success: true, message: 'Account created successfully!' };
+      if (foundUser) {
+        const { password: _, ...userWithoutPassword } = foundUser;
+        setUser(userWithoutPassword);
+        localStorage.setItem('vyapaar_user', JSON.stringify(userWithoutPassword));
+        return { success: true, message: 'Login successful' };
+      } else {
+        return { success: false, message: 'Invalid credentials' };
+      }
     } catch (error) {
+      return { success: false, message: 'Login failed' };
+    } finally {
       setIsLoading(false);
-      return { success: false, message: 'Failed to create account' };
     }
   };
 
-  const login = async (emailOrPhone: string, password: string) => {
+  const signUp = async (emailOrPhone: string, password: string, name: string, storeName?: string): Promise<{ success: boolean; message: string }> => {
     setIsLoading(true);
+    
     try {
-      // Validate mobile number format if not email
-      if (!emailOrPhone.includes('@')) {
-        if (!/^[6-9]\d{9}$/.test(emailOrPhone)) {
-          setIsLoading(false);
-          return { success: false, message: 'Mobile number must be exactly 10 digits starting with 6-9' };
-        }
+      // Get existing users
+      const existingUsers = JSON.parse(localStorage.getItem('vyapaar_users') || '[]');
+      
+      // Check if user already exists
+      const userExists = existingUsers.some((u: any) => u.email === emailOrPhone || u.phone === emailOrPhone);
+      
+      if (userExists) {
+        return { success: false, message: 'User already exists' };
       }
 
-      // Simulate login verification
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Check all stored credentials to find matching user
-      let foundUser = null;
-      let foundUserId = null;
-      
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith('user_credentials_')) {
-          const userId = key.replace('user_credentials_', '');
-          const storedCredentials = localStorage.getItem(key);
-          
-          if (storedCredentials) {
-            const { emailOrPhone: storedEmail, password: storedPassword } = JSON.parse(storedCredentials);
-            
-            if (emailOrPhone === storedEmail && password === storedPassword) {
-              const userData = localStorage.getItem(`vyapaar_user_${userId}`);
-              if (userData) {
-                foundUser = JSON.parse(userData);
-                foundUserId = userId;
-                break;
-              }
-            }
-          }
-        }
-      }
-      
-      if (foundUser && foundUserId) {
-        setUser(foundUser);
-        localStorage.setItem('current_user_id', foundUserId);
-        setIsLoading(false);
-        return { success: true, message: 'Login successful!' };
-      } else {
-        setIsLoading(false);
-        return { success: false, message: 'Invalid credentials or account not found' };
-      }
+      // Create new user
+      const newUser = {
+        id: `user_${Date.now()}`,
+        name,
+        storeName: storeName || '',
+        password,
+        ...(emailOrPhone.includes('@') ? { email: emailOrPhone } : { phone: emailOrPhone })
+      };
+
+      // Save to users array
+      existingUsers.push(newUser);
+      localStorage.setItem('vyapaar_users', JSON.stringify(existingUsers));
+
+      // Set current user (without password)
+      const { password: _, ...userWithoutPassword } = newUser;
+      setUser(userWithoutPassword);
+      localStorage.setItem('vyapaar_user', JSON.stringify(userWithoutPassword));
+
+      return { success: true, message: 'Account created successfully' };
     } catch (error) {
+      return { success: false, message: 'Sign up failed' };
+    } finally {
       setIsLoading(false);
-      return { success: false, message: 'Login failed' };
     }
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('current_user_id');
+    localStorage.removeItem('vyapaar_user');
+  };
+
+  const updateProfile = (updates: Partial<User>) => {
+    if (user) {
+      const updatedUser = { ...user, ...updates };
+      setUser(updatedUser);
+      localStorage.setItem('vyapaar_user', JSON.stringify(updatedUser));
+      
+      // Also update in users array
+      const existingUsers = JSON.parse(localStorage.getItem('vyapaar_users') || '[]');
+      const userIndex = existingUsers.findIndex((u: any) => u.id === user.id);
+      if (userIndex !== -1) {
+        existingUsers[userIndex] = { ...existingUsers[userIndex], ...updates };
+        localStorage.setItem('vyapaar_users', JSON.stringify(existingUsers));
+      }
+    }
   };
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      isLoading,
-      signUp,
-      login,
-      logout
+    <AuthContext.Provider value={{ 
+      user, 
+      login, 
+      signUp, 
+      logout, 
+      updateProfile,
+      isLoading 
     }}>
       {children}
     </AuthContext.Provider>

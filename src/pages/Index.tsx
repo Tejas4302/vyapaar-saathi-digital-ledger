@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import WelcomeScreen from '@/components/WelcomeScreen';
@@ -11,14 +11,34 @@ import InventoryScreen from '@/components/InventoryScreen';
 import AnalyticsScreen from '@/components/AnalyticsScreen';
 import ProfileScreen from '@/components/ProfileScreen';
 import BottomNav from '@/components/BottomNav';
+import LanguageDropdown from '@/components/LanguageDropdown';
+import ProductTour from '@/components/ProductTour';
 import { Button } from '@/components/ui/button';
-import { LogOut, Globe } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 
 const Index = () => {
   const { user, logout } = useAuth();
-  const { t, language, setLanguage } = useLanguage();
+  const { t } = useLanguage();
   const [showWelcome, setShowWelcome] = useState(!user);
   const [activeTab, setActiveTab] = useState('calculator');
+  const [showProductTour, setShowProductTour] = useState(false);
+
+  // Check if user is new and should see product tour
+  useEffect(() => {
+    if (user) {
+      const hasSeenTour = localStorage.getItem(`tour_seen_${user.id}`);
+      if (!hasSeenTour) {
+        setShowProductTour(true);
+      }
+    }
+  }, [user]);
+
+  const handleTourClose = () => {
+    setShowProductTour(false);
+    if (user) {
+      localStorage.setItem(`tour_seen_${user.id}`, 'true');
+    }
+  };
 
   // Show welcome screen for new users
   if (showWelcome && !user) {
@@ -29,22 +49,6 @@ const Index = () => {
   if (!user) {
     return <AuthScreen />;
   }
-
-  const getLanguageOptions = () => {
-    switch (language) {
-      case 'kn': return 'English';
-      case 'hi': return 'ಕನ್ನಡ';
-      case 'te': return 'हिंदी';
-      default: return 'ಕನ್ನಡ';
-    }
-  };
-
-  const cycleLanguage = () => {
-    const languages: ('en' | 'kn' | 'hi' | 'te')[] = ['en', 'kn', 'hi', 'te'];
-    const currentIndex = languages.indexOf(language);
-    const nextIndex = (currentIndex + 1) % languages.length;
-    setLanguage(languages[nextIndex]);
-  };
 
   // Main app interface
   const renderScreen = () => {
@@ -60,7 +64,7 @@ const Index = () => {
       case 'analytics':
         return <AnalyticsScreen />;
       case 'profile':
-        return <ProfileScreen />;
+        return <ProfileScreen onStartTour={() => setShowProductTour(true)} />;
       default:
         return <Calculator />;
     }
@@ -83,13 +87,7 @@ const Index = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={cycleLanguage}
-            >
-              <Globe className="w-4 h-4" />
-            </Button>
+            <LanguageDropdown />
             <Button
               variant="ghost"
               size="sm"
@@ -117,6 +115,9 @@ const Index = () => {
 
       {/* Bottom Navigation */}
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+
+      {/* Product Tour */}
+      <ProductTour isOpen={showProductTour} onClose={handleTourClose} />
     </div>
   );
 };

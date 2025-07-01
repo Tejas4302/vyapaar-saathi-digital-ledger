@@ -1,13 +1,14 @@
-
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, TrendingDown, DollarSign, Users, Package, Calendar } from 'lucide-react';
+import { TrendingUp, TrendingDown, IndianRupee, Users, Package, Calendar } from 'lucide-react';
 import { useData } from '@/contexts/DataContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { format, isThisWeek, isThisMonth, startOfWeek, startOfMonth, eachDayOfInterval, endOfWeek, endOfMonth } from 'date-fns';
 
 const AnalyticsScreen: React.FC = () => {
   const { transactions, customers, inventory } = useData();
+  const { t } = useLanguage();
   const [period, setPeriod] = useState<'week' | 'month'>('week');
 
   const formatCurrency = (amount: number) => {
@@ -29,7 +30,6 @@ const AnalyticsScreen: React.FC = () => {
     const profit = sales - expenses;
     const profitMargin = sales > 0 ? (profit / sales) * 100 : 0;
     
-    // Top selling calculation (simplified - based on transaction amounts)
     const salesByAmount = periodTransactions
       .filter(t => t.type === 'cash_in')
       .reduce((acc: Record<string, number>, transaction) => {
@@ -93,7 +93,7 @@ const AnalyticsScreen: React.FC = () => {
           onClick={() => setPeriod('week')}
           className="flex-1"
         >
-          This Week
+          {t('thisWeek')}
         </Button>
         <Button
           variant={period === 'month' ? 'default' : 'outline'}
@@ -101,7 +101,7 @@ const AnalyticsScreen: React.FC = () => {
           onClick={() => setPeriod('month')}
           className="flex-1"
         >
-          This Month
+          {t('thisMonth')}
         </Button>
       </div>
 
@@ -110,7 +110,7 @@ const AnalyticsScreen: React.FC = () => {
         <Card className="p-4 bg-gradient-to-r from-success to-green-600 text-white">
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp className="w-5 h-5" />
-            <span className="text-sm">Sales</span>
+            <span className="text-sm">{t('sales')}</span>
           </div>
           <p className="text-xl font-bold">{formatCurrency(analytics.sales)}</p>
         </Card>
@@ -118,26 +118,26 @@ const AnalyticsScreen: React.FC = () => {
         <Card className="p-4 bg-gradient-to-r from-red-500 to-red-600 text-white">
           <div className="flex items-center gap-2 mb-2">
             <TrendingDown className="w-5 h-5" />
-            <span className="text-sm">Expenses</span>
+            <span className="text-sm">{t('expenses')}</span>
           </div>
           <p className="text-xl font-bold">{formatCurrency(analytics.expenses)}</p>
         </Card>
         
         <Card className="p-4 bg-gradient-to-r from-primary to-blue-700 text-white">
           <div className="flex items-center gap-2 mb-2">
-            <DollarSign className="w-5 h-5" />
-            <span className="text-sm">Profit</span>
+            <IndianRupee className="w-5 h-5" />
+            <span className="text-sm">{t('profit')}</span>
           </div>
           <p className="text-xl font-bold">{formatCurrency(analytics.profit)}</p>
           <p className="text-xs opacity-80">
-            {analytics.profitMargin.toFixed(1)}% margin
+            {analytics.profitMargin.toFixed(1)}% {t('margin')}
           </p>
         </Card>
         
         <Card className="p-4 bg-gradient-to-r from-accent to-orange-600 text-white">
           <div className="flex items-center gap-2 mb-2">
             <Calendar className="w-5 h-5" />
-            <span className="text-sm">Transactions</span>
+            <span className="text-sm">{t('transactions')}</span>
           </div>
           <p className="text-xl font-bold">{analytics.transactionCount}</p>
         </Card>
@@ -145,7 +145,7 @@ const AnalyticsScreen: React.FC = () => {
 
       {/* Daily Sales Chart */}
       <Card className="p-4">
-        <h3 className="font-semibold mb-4">Daily Sales ({period === 'week' ? 'This Week' : 'This Month'})</h3>
+        <h3 className="font-semibold mb-4">{t('dailySales')} ({period === 'week' ? t('thisWeek') : t('thisMonth')})</h3>
         <div className="flex items-end justify-between h-32 gap-1">
           {dailyData.map((day, index) => (
             <div key={index} className="flex flex-col items-center flex-1">
@@ -167,14 +167,14 @@ const AnalyticsScreen: React.FC = () => {
       {/* Top Sales */}
       {analytics.topSales.length > 0 && (
         <Card className="p-4">
-          <h3 className="font-semibold mb-3">Top Transaction Amounts</h3>
+          <h3 className="font-semibold mb-3">{t('topTransactionAmounts')}</h3>
           <div className="space-y-2">
             {analytics.topSales.map(([amount, count], index) => (
               <div key={amount} className="flex items-center justify-between">
                 <span className="text-sm">
                   #{index + 1} {formatCurrency(parseFloat(amount))}
                 </span>
-                <span className="text-sm text-gray-500">{count} times</span>
+                <span className="text-sm text-gray-500">{count} {t('times')}</span>
               </div>
             ))}
           </div>
@@ -186,46 +186,46 @@ const AnalyticsScreen: React.FC = () => {
         <Card className="p-4">
           <div className="flex items-center gap-2 mb-2">
             <Users className="w-5 h-5 text-accent" />
-            <span className="text-sm font-medium">Outstanding</span>
+            <span className="text-sm font-medium">{t('outstanding')}</span>
           </div>
           <p className="text-lg font-bold text-accent">
             {formatCurrency(analytics.outstandingAmount)}
           </p>
-          <p className="text-xs text-gray-500">Total udhaar</p>
+          <p className="text-xs text-gray-500">{t('totalUdhaar')}</p>
         </Card>
         
         <Card className="p-4">
           <div className="flex items-center gap-2 mb-2">
             <Package className="w-5 h-5 text-orange-600" />
-            <span className="text-sm font-medium">Low Stock</span>
+            <span className="text-sm font-medium">{t('lowStock')}</span>
           </div>
           <p className="text-lg font-bold text-orange-600">
             {analytics.lowStockItems}
           </p>
-          <p className="text-xs text-gray-500">Items running low</p>
+          <p className="text-xs text-gray-500">{t('itemsRunningLow')}</p>
         </Card>
       </div>
 
       {/* Quick Insights */}
       <Card className="p-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white">
-        <h3 className="font-semibold mb-3">Quick Insights</h3>
+        <h3 className="font-semibold mb-3">{t('quickInsights')}</h3>
         <div className="space-y-2 text-sm">
           {analytics.profit > 0 ? (
-            <p>✅ Your business is profitable this {period}!</p>
+            <p>✅ {t('businessProfitable')} {period === 'week' ? t('thisWeek') : t('thisMonth')}!</p>
           ) : (
-            <p>⚠️ Expenses exceeded sales this {period}</p>
+            <p>⚠️ {t('expensesExceeded')} {period === 'week' ? t('thisWeek') : t('thisMonth')}</p>
           )}
           
           {analytics.outstandingAmount > 0 && (
-            <p>💰 You have {formatCurrency(analytics.outstandingAmount)} in pending payments</p>
+            <p>💰 {t('youHave')} {formatCurrency(analytics.outstandingAmount)} {t('inPendingPayments')}</p>
           )}
           
           {analytics.lowStockItems > 0 && (
-            <p>📦 {analytics.lowStockItems} items need restocking</p>
+            <p>📦 {analytics.lowStockItems} {t('itemsNeedRestocking')}</p>
           )}
           
           {analytics.transactionCount === 0 && (
-            <p>📝 No transactions recorded this {period}</p>
+            <p>📝 {t('noTransactionsRecorded')} {period === 'week' ? t('thisWeek') : t('thisMonth')}</p>
           )}
         </div>
       </Card>

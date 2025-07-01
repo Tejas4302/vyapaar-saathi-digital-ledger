@@ -1,15 +1,20 @@
+
 import React, { useState, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Camera, User, Phone, Mail, Store, Edit2, Save, X, LogOut } from 'lucide-react';
+import { Camera, User, Phone, Mail, Store, Edit2, Save, X, LogOut, HelpCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
 
-const ProfileScreen: React.FC = () => {
-  const { user, logout } = useAuth();
-  const { t, language } = useLanguage();
+interface ProfileScreenProps {
+  onStartTour: () => void;
+}
+
+const ProfileScreen: React.FC<ProfileScreenProps> = ({ onStartTour }) => {
+  const { user, logout, updateProfile } = useAuth();
+  const { t } = useLanguage();
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState({
     name: user?.name || '',
@@ -24,7 +29,7 @@ const ProfileScreen: React.FC = () => {
     const file = event.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        toast.error('Photo size should be less than 5MB');
+        toast.error(t('photoSizeLessThan5MB'));
         return;
       }
 
@@ -32,7 +37,7 @@ const ProfileScreen: React.FC = () => {
       reader.onload = (e) => {
         const result = e.target?.result as string;
         setEditedUser(prev => ({ ...prev, profilePhoto: result }));
-        toast.success('Photo uploaded successfully!');
+        toast.success(t('photoUploadedSuccessfully'));
       };
       reader.readAsDataURL(file);
     }
@@ -43,8 +48,8 @@ const ProfileScreen: React.FC = () => {
   };
 
   const handleSave = () => {
-    // In a real app, this would update the user data in the backend
-    toast.success('Profile updated successfully!');
+    updateProfile(editedUser);
+    toast.success(t('profileUpdatedSuccessfully'));
     setIsEditing(false);
   };
 
@@ -144,11 +149,7 @@ const ProfileScreen: React.FC = () => {
 
       {/* Profile Details */}
       <Card className="p-4">
-        <h3 className="font-semibold mb-4">
-          {t('profile')} {language === 'en' ? 'Details' : 
-                        language === 'kn' ? 'ವಿವರಗಳು' :
-                        language === 'hi' ? 'विवरण' : 'వివరాలు'}
-        </h3>
+        <h3 className="font-semibold mb-4">{t('profileDetails')}</h3>
         
         <div className="space-y-4">
           <div className="flex items-center gap-3">
@@ -164,6 +165,26 @@ const ProfileScreen: React.FC = () => {
                 />
               ) : (
                 <p className="text-gray-900">{user.name}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Store className="w-5 h-5 text-gray-400" />
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t('storeName')}
+              </label>
+              {isEditing ? (
+                <Input
+                  value={editedUser.storeName}
+                  onChange={(e) => setEditedUser(prev => ({ ...prev, storeName: e.target.value }))}
+                  placeholder={t('enterStoreName')}
+                />
+              ) : (
+                <p className="text-gray-900">
+                  {user.storeName || t('notSet')}
+                </p>
               )}
             </div>
           </div>
@@ -191,37 +212,18 @@ const ProfileScreen: React.FC = () => {
               </div>
             </div>
           )}
-
-          <div className="flex items-center gap-3">
-            <Store className="w-5 h-5 text-gray-400" />
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {language === 'en' ? 'Store Name' :
-                 language === 'kn' ? 'ಅಂಗಡಿಯ ಹೆಸರು' :
-                 language === 'hi' ? 'दुकान का नाम' :
-                 'దుకాణం పేరు'}
-              </label>
-              {isEditing ? (
-                <Input
-                  value={editedUser.storeName}
-                  onChange={(e) => setEditedUser(prev => ({ ...prev, storeName: e.target.value }))}
-                  placeholder={language === 'en' ? 'Enter store name' :
-                              language === 'kn' ? 'ಅಂಗಡಿಯ ಹೆಸರನ್ನು ನಮೂದಿಸಿ' :
-                              language === 'hi' ? 'दुकान का नाम दर्ज करें' :
-                              'దుకాణం పేరు నమోదు చేయండి'}
-                />
-              ) : (
-                <p className="text-gray-900">
-                  {user.storeName || (language === 'en' ? 'Not set' :
-                                     language === 'kn' ? 'ಸೆಟ್ ಮಾಡಿಲ್ಲ' :
-                                     language === 'hi' ? 'सेट नहीं किया गया' :
-                                     'సెట్ చేయలేదు')}
-                </p>
-              )}
-            </div>
-          </div>
         </div>
       </Card>
+
+      {/* Product Tour Button */}
+      <Button
+        onClick={onStartTour}
+        variant="outline"
+        className="w-full"
+      >
+        <HelpCircle className="w-4 h-4 mr-2" />
+        {t('takeProductTour')}
+      </Button>
 
       {/* Logout Button */}
       <Button

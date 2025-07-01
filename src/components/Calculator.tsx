@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -130,14 +129,14 @@ const Calculator: React.FC = () => {
         
         if (!isNaN(amount) && amount > 0) {
           setDisplay(amount.toString());
-          toast.success(`Amount set to ₹${amount}`);
+          toast.success(`${t('amountSetTo')} ₹${amount}`);
         } else {
-          toast.error('Could not recognize amount');
+          toast.error(t('couldNotRecognizeAmount'));
         }
       };
 
       recognition.onerror = () => {
-        toast.error('Voice recognition error');
+        toast.error(t('voiceRecognitionError'));
         setIsListening(false);
       };
 
@@ -147,7 +146,7 @@ const Calculator: React.FC = () => {
 
       recognition.start();
     } else {
-      toast.error('Voice recognition not supported');
+      toast.error(t('voiceRecognitionNotSupported'));
     }
   };
 
@@ -161,13 +160,14 @@ const Calculator: React.FC = () => {
       addTransaction({
         amount,
         type: transactionType,
-        paymentStatus: paymentMode === 'udhaar' ? 'udhaar' : 'paid'
+        paymentStatus: paymentMode === 'udhaar' ? 'udhaar' : 'paid',
+        paymentMode: paymentMode
       });
       
       toast.success(t('transactionSaved'));
       clear();
     } else {
-      toast.error('Please enter a valid amount');
+      toast.error(t('pleaseEnterValidAmount'));
     }
   };
 
