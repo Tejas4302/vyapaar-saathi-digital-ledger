@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Mail, Phone, User, Globe, Lock } from 'lucide-react';
+import { Mail, Phone, User, Globe, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
@@ -16,6 +16,7 @@ const AuthScreen: React.FC = () => {
   const [emailOrPhone, setEmailOrPhone] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const isEmail = emailOrPhone.includes('@');
   const isValidPhone = /^[6-9]\d{9}$/.test(emailOrPhone);
@@ -68,6 +69,23 @@ const AuthScreen: React.FC = () => {
     setEmailOrPhone('');
     setPassword('');
     setName('');
+    setShowPassword(false);
+  };
+
+  const getLanguageOptions = () => {
+    switch (language) {
+      case 'kn': return 'English';
+      case 'hi': return 'ಕನ್ನಡ';
+      case 'te': return 'हिंदी';
+      default: return 'ಕನ್ನಡ';
+    }
+  };
+
+  const cycleLanguage = () => {
+    const languages: ('en' | 'kn' | 'hi' | 'te')[] = ['en', 'kn', 'hi', 'te'];
+    const currentIndex = languages.indexOf(language);
+    const nextIndex = (currentIndex + 1) % languages.length;
+    setLanguage(languages[nextIndex]);
   };
 
   return (
@@ -78,11 +96,11 @@ const AuthScreen: React.FC = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setLanguage(language === 'en' ? 'kn' : 'en')}
+            onClick={cycleLanguage}
             className="flex items-center gap-2"
           >
             <Globe className="w-4 h-4" />
-            {language === 'en' ? 'ಕನ್ನಡ' : 'English'}
+            {getLanguageOptions()}
           </Button>
         </div>
 
@@ -95,8 +113,13 @@ const AuthScreen: React.FC = () => {
               className="w-24 h-24 mx-auto rounded-full"
             />
           </div>
-          <h1 className="text-2xl font-bold text-primary mb-2">{t('welcome')} {t('appName')}</h1>
-          <p className="text-gray-600">Start managing your business digitally</p>
+          <h1 className="text-2xl font-bold text-primary mb-2">{t('welcomeTo')}</h1>
+          <p className="text-gray-600">
+            {language === 'en' ? 'Start managing your business digitally' :
+             language === 'kn' ? 'ನಿಮ್ಮ ವ್ಯಾಪಾರವನ್ನು ಡಿಜಿಟಲ್ ಆಗಿ ನಿರ್ವಹಿಸಲು ಪ್ರಾರಂಭಿಸಿ' :
+             language === 'hi' ? 'अपने व्यापार को डिजिटल रूप से प्रबंधित करना शुरू करें' :
+             'మీ వ్యాపారాన్ని డిజిటల్‌గా నిర్వహించడం ప్రారంభించండి'}
+          </p>
         </div>
 
         <Card className="p-6">
@@ -131,7 +154,12 @@ const AuthScreen: React.FC = () => {
                     />
                   </div>
                   {!isEmail && emailOrPhone && (
-                    <p className="text-xs text-gray-500 mt-1">Mobile number must be 10 digits starting with 6-9</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {language === 'en' ? 'Mobile number must be 10 digits starting with 6-9' :
+                       language === 'kn' ? 'ಮೊಬೈಲ್ ಸಂಖ್ಯೆ 6-9 ರಿಂದ ಪ್ರಾರಂಭವಾಗುವ 10 ಅಂಕೆಗಳಾಗಿರಬೇಕು' :
+                       language === 'hi' ? 'मोबाइल नंबर 6-9 से शुरू होने वाले 10 अंकों का होना चाहिए' :
+                       'మొబైల్ నంబర్ 6-9తో ప్రారంభమయ్యే 10 అంకెలు ఉండాలి'}
+                    </p>
                   )}
                 </div>
                 <div>
@@ -141,13 +169,24 @@ const AuthScreen: React.FC = () => {
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       placeholder={t('enterPassword')}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10"
+                      className="pl-10 pr-10"
                       required
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
+                    </button>
                   </div>
                 </div>
                 <Button
@@ -155,7 +194,12 @@ const AuthScreen: React.FC = () => {
                   className="mobile-button w-full bg-primary hover:bg-blue-800"
                   disabled={isLoading || (!isValidEmail && !isValidPhone) || !password}
                 >
-                  {isLoading ? 'Logging in...' : t('login')}
+                  {isLoading ? (
+                    language === 'en' ? 'Logging in...' :
+                    language === 'kn' ? 'ಲಾಗಿನ್ ಆಗುತ್ತಿದೆ...' :
+                    language === 'hi' ? 'लॉगिन हो रहा है...' :
+                    'లాగిన్ అవుతోంది...'
+                  ) : t('login')}
                 </Button>
               </div>
             </TabsContent>
@@ -196,7 +240,12 @@ const AuthScreen: React.FC = () => {
                     />
                   </div>
                   {!isEmail && emailOrPhone && (
-                    <p className="text-xs text-gray-500 mt-1">Mobile number must be 10 digits starting with 6-9</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {language === 'en' ? 'Mobile number must be 10 digits starting with 6-9' :
+                       language === 'kn' ? 'ಮೊಬೈಲ್ ಸಂಖ್ಯೆ 6-9 ರಿಂದ ಪ್ರಾರಂಭವಾಗುವ 10 ಅಂಕೆಗಳಾಗಿರಬೇಕು' :
+                       language === 'hi' ? 'मोबाइल नंबर 6-9 से शुरू होने वाले 10 अंकों का होना चाहिए' :
+                       'మొబైల్ నంబర్ 6-9తో ప్రారంభమయ్యే 10 అంకెలు ఉండాలి'}
+                    </p>
                   )}
                 </div>
                 <div>
@@ -204,22 +253,43 @@ const AuthScreen: React.FC = () => {
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       placeholder={t('createPassword')}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10"
+                      className="pl-10 pr-10"
                       required
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
+                    </button>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Minimum 6 characters</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {language === 'en' ? 'Minimum 6 characters' :
+                     language === 'kn' ? 'ಕನಿಷ್ಠ 6 ಅಕ್ಷರಗಳು' :
+                     language === 'hi' ? 'न्यूनतम 6 अक्षर' :
+                     'కనీసం 6 అక్షరాలు'}
+                  </p>
                 </div>
                 <Button
                   onClick={handleSignUp}
                   className="mobile-button w-full bg-primary hover:bg-blue-800"
                   disabled={isLoading || !name.trim() || (!isValidEmail && !isValidPhone) || password.length < 6}
                 >
-                  {isLoading ? 'Creating Account...' : t('signUp')}
+                  {isLoading ? (
+                    language === 'en' ? 'Creating Account...' :
+                    language === 'kn' ? 'ಖಾತೆ ರಚಿಸುತ್ತಿದೆ...' :
+                    language === 'hi' ? 'खाता बनाया जा रहा है...' :
+                    'ఖాతా సృష్టిస్తోంది...'
+                  ) : t('signUp')}
                 </Button>
               </div>
             </TabsContent>

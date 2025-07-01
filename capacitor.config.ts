@@ -2,7 +2,7 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.Vyapaarsetu.app',
+  appId: 'com.vyapaarsetu.app',
   appName: 'VyapaarSetu',
   webDir: 'dist',
   server: {
@@ -17,6 +17,12 @@ const config: CapacitorConfig = {
       splashFullScreen: true,
       splashImmersive: true,
     },
+    Camera: {
+      permissions: ['camera', 'photos']
+    },
+    Microphone: {
+      permissions: ['microphone']
+    }
   },
 };
 

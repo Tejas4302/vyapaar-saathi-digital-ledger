@@ -1,8 +1,8 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Globe } from 'lucide-react';
+import { Globe, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface WelcomeScreenProps {
   onGetStarted: () => void;
@@ -10,6 +10,78 @@ interface WelcomeScreenProps {
 
 const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onGetStarted }) => {
   const { t, language, setLanguage } = useLanguage();
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const slides = [
+    {
+      title: language === 'en' ? 'Digital Business Management' : 
+             language === 'kn' ? 'ಡಿಜಿಟಲ್ ವ್ಯಾಪಾರ ನಿರ್ವಹಣೆ' :
+             language === 'hi' ? 'डिजिटल व्यापार प्रबंधन' :
+             'డిజిటల్ వ్యాపార నిర్వహణ',
+      description: language === 'en' ? 'Manage your business digitally with ease' :
+                   language === 'kn' ? 'ನಿಮ್ಮ ವ್ಯಾಪಾರವನ್ನು ಸುಲಭವಾಗಿ ಡಿಜಿಟಲ್ ಆಗಿ ನಿರ್ವಹಿಸಿ' :
+                   language === 'hi' ? 'अपने व्यापार को आसानी से डिजिटल रूप से प्रबंधित करें' :
+                   'మీ వ్యాపారాన్ని సులభంగా డిజిటల్‌గా నిర్వహించండి'
+    },
+    {
+      title: language === 'en' ? 'Smart Calculator' :
+             language === 'kn' ? 'ಸ್ಮಾರ್ಟ್ ಕ್ಯಾಲ್ಕುಲೇಟರ್' :
+             language === 'hi' ? 'स्मार्ट कैलकुलेटर' :
+             'స్మార్ట్ కాలిక్యులేటర్',
+      description: language === 'en' ? 'Calculate and record transactions instantly' :
+                   language === 'kn' ? 'ತಕ್ಷಣ ಲೆಕ್ಕಾಚಾರ ಮಾಡಿ ಮತ್ತು ವ್ಯವಹಾರಗಳನ್ನು ದಾಖಲಿಸಿ' :
+                   language === 'hi' ? 'तुरंत गणना करें और लेनदेन रिकॉर्ड करें' :
+                   'తక్షణ లెక్కింపు మరియు లావాదేవీలను రికార్డ్ చేయండి'
+    },
+    {
+      title: language === 'en' ? 'Customer Management' :
+             language === 'kn' ? 'ಗ್ರಾಹಕ ನಿರ್ವಹಣೆ' :
+             language === 'hi' ? 'ग्राहक प्रबंधन' :
+             'కస్టమర్ నిర్వహణ',
+      description: language === 'en' ? 'Track customers and their due payments' :
+                   language === 'kn' ? 'ಗ್ರಾಹಕರು ಮತ್ತು ಅವರ ಬಾಕಿ ಪಾವತಿಗಳನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ' :
+                   language === 'hi' ? 'ग्राहकों और उनके बकाया भुगतान को ट्रैक करें' :
+                   'కస్టమర్లు మరియు వారి బకాయి చెల్లింపులను ట్రాక్ చేయండి'
+    },
+    {
+      title: language === 'en' ? 'Voice-Enabled Features' :
+             language === 'kn' ? 'ಧ್ವನಿ-ಸಕ್ರಿಯ ವೈಶಿಷ್ಟ್ಯಗಳು' :
+             language === 'hi' ? 'आवाज़-सक्षम सुविधाएं' :
+             'వాయిస్-ప్రారంభ లక్షణాలు',
+      description: language === 'en' ? 'Speak to add items, customers, and inventory' :
+                   language === 'kn' ? 'ಐಟಂಗಳು, ಗ್ರಾಹಕರು ಮತ್ತು ದಾಸ್ತಾನು ಸೇರಿಸಲು ಮಾತನಾಡಿ' :
+                   language === 'hi' ? 'आइटम, ग्राहक और इन्वेंटरी जोड़ने के लिए बोलें' :
+                   'వస్తువులు, కస్టమర్లు మరియు ఇన్వెంటరీ జోడించడానికి మాట్లాడండి'
+    }
+  ];
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+  };
+
+  const goToSlide = (index: number) => {
+    setCurrentSlide(index);
+  };
+
+  const getLanguageOptions = () => {
+    switch (language) {
+      case 'kn': return 'English';
+      case 'hi': return 'ಕನ್ನಡ';
+      case 'te': return 'हिंदी';
+      default: return 'ಕನ್ನಡ';
+    }
+  };
+
+  const cycleLanguage = () => {
+    const languages: ('en' | 'kn' | 'hi' | 'te')[] = ['en', 'kn', 'hi', 'te'];
+    const currentIndex = languages.indexOf(language);
+    const nextIndex = (currentIndex + 1) % languages.length;
+    setLanguage(languages[nextIndex]);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
@@ -18,15 +90,15 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onGetStarted }) => {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => setLanguage(language === 'en' ? 'kn' : 'en')}
+          onClick={cycleLanguage}
           className="flex items-center gap-2"
         >
           <Globe className="w-4 h-4" />
-          {language === 'en' ? 'ಕನ್ನಡ' : 'English'}
+          {getLanguageOptions()}
         </Button>
       </div>
 
-      <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+      <div className="flex-1 flex flex-col items-center justify-center px-6 text-center relative">
         {/* Logo */}
         <div className="mb-8">
           <img 
@@ -39,48 +111,59 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onGetStarted }) => {
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
           {t('appName')}
         </h1>
-        
-        <p className="text-lg text-gray-600 mb-8 max-w-md">
-          {language === 'en' 
-            ? 'आपके व्यापार का डिजिटल युग' 
-            : 'ನಿಮ್ಮ ವ್ಯಾಪಾರದ ಡಿಜಿಟಲ್ ಯುಗ'
-          }
-        </p>
 
-        {/* Feature highlights */}
-        <div className="mb-12 space-y-4 max-w-sm">
-          <div className="flex items-center gap-3 p-4 bg-white rounded-xl shadow-sm">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <img 
-                src="/lovable-uploads/592c8570-e687-4d0b-b5c3-abd42466406b.png" 
-                alt="Calculator" 
-                className="w-8 h-8 rounded"
+        {/* Slide content */}
+        <div className="mb-8 max-w-md min-h-[120px] flex flex-col justify-center">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+            {slides[currentSlide].title}
+          </h2>
+          <p className="text-lg text-gray-600">
+            {slides[currentSlide].description}
+          </p>
+        </div>
+
+        {/* Navigation buttons */}
+        <div className="flex items-center gap-4 mb-8">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={prevSlide}
+            className="w-10 h-10 rounded-full p-0"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
+          
+          <div className="flex space-x-2">
+            {slides.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => goToSlide(index)}
+                className={`w-3 h-3 rounded-full transition-colors ${
+                  index === currentSlide ? 'bg-blue-600' : 'bg-gray-300'
+                }`}
               />
-            </div>
-            <div className="text-left">
-              <h3 className="font-semibold text-gray-900">
-                {language === 'en' ? 'Digitize your daily accounts in seconds!' : 'ಸೆಕೆಂಡುಗಳಲ್ಲಿ ನಿಮ್ಮ ದೈನಂದಿನ ಖಾತೆಗಳನ್ನು ಡಿಜಿಟೈಜ್ ಮಾಡಿ!'}
-              </h3>
-              <p className="text-sm text-gray-600">
-                {language === 'en' ? 'Calculator-first interface that feels familiar' : 'ಪರಿಚಿತವಾಗಿ ಭಾಸವಾಗುವ ಕ್ಯಾಲ್ಕುಲೇಟರ್-ಪ್ರಥಮ ಇಂಟರ್ಫೇಸ್'}
-              </p>
-            </div>
+            ))}
           </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={nextSlide}
+            className="w-10 h-10 rounded-full p-0"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </Button>
         </div>
 
-        <Button 
-          onClick={onGetStarted}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 text-lg rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105"
-        >
-          {t('getStarted')}
-        </Button>
-
-        <div className="mt-8 flex space-x-2">
-          <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-          <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
-          <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
-          <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
-        </div>
+        {/* Get Started button - only show on last slide */}
+        {currentSlide === slides.length - 1 && (
+          <Button 
+            onClick={onGetStarted}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 text-lg rounded-xl shadow-lg transition-all duration-200 transform hover:scale-105"
+          >
+            {t('getStarted')}
+          </Button>
+        )}
       </div>
     </div>
   );

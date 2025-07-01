@@ -1,261 +1,237 @@
-
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Camera, Store, Key, LogOut, User, Eye, EyeOff } from 'lucide-react';
+import { Camera, User, Phone, Mail, Store, Edit2, Save, X, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
 
 const ProfileScreen: React.FC = () => {
   const { user, logout } = useAuth();
+  const { t, language } = useLanguage();
   const [isEditing, setIsEditing] = useState(false);
-  const [showPasswordForm, setShowPasswordForm] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
-  const [profileData, setProfileData] = useState({
+  const [editedUser, setEditedUser] = useState({
     name: user?.name || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
     storeName: user?.storeName || '',
     profilePhoto: user?.profilePhoto || ''
   });
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  });
+  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast.error('Photo size should be less than 5MB');
+        return;
+      }
 
-  const handleLogout = () => {
-    logout();
-    toast.success('Logged out successfully');
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setEditedUser(prev => ({ ...prev, profilePhoto: result }));
+        toast.success('Photo uploaded successfully!');
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
-  const handleProfileUpdate = () => {
-    // In a real app, this would update the user profile
+  const triggerPhotoUpload = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleSave = () => {
+    // In a real app, this would update the user data in the backend
+    toast.success('Profile updated successfully!');
     setIsEditing(false);
-    toast.success('Profile updated successfully');
   };
 
-  const handlePasswordChange = () => {
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error('New passwords do not match');
-      return;
-    }
-
-    if (passwordData.newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters');
-      return;
-    }
-
-    // In a real app, this would change the password
-    setShowPasswordForm(false);
-    setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    toast.success('Password changed successfully');
+  const handleCancel = () => {
+    setEditedUser({
+      name: user?.name || '',
+      email: user?.email || '',
+      phone: user?.phone || '',
+      storeName: user?.storeName || '',
+      profilePhoto: user?.profilePhoto || ''
+    });
+    setIsEditing(false);
   };
 
-  const handlePhotoUpload = () => {
-    // In a real app, this would open photo picker
-    toast.info('Photo upload feature will be available in the mobile app');
-  };
-
-  const handlePhotoRemove = () => {
-    setProfileData({ ...profileData, profilePhoto: '' });
-    toast.success('Profile photo removed');
-  };
+  if (!user) return null;
 
   return (
     <div className="max-w-md mx-auto p-4 space-y-4 pb-20">
       {/* Profile Header */}
       <Card className="p-6 text-center">
         <div className="relative inline-block mb-4">
-          <Avatar className="w-24 h-24 mx-auto">
-            <AvatarImage src={profileData.profilePhoto} />
-            <AvatarFallback className="text-xl bg-primary text-white">
-              {profileData.name.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <Button
-            size="sm"
-            className="absolute -bottom-2 -right-2 rounded-full w-8 h-8 p-0"
-            onClick={handlePhotoUpload}
-          >
-            <Camera className="w-4 h-4" />
-          </Button>
-        </div>
-        
-        {profileData.profilePhoto && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handlePhotoRemove}
-            className="mb-4"
-          >
-            Remove Photo
-          </Button>
-        )}
-
-        <h2 className="text-xl font-bold text-primary">{profileData.name}</h2>
-        {profileData.storeName && (
-          <p className="text-gray-600">{profileData.storeName}</p>
-        )}
-        <p className="text-sm text-gray-500">{user?.email || user?.phone}</p>
-      </Card>
-
-      {/* Profile Information */}
-      <Card className="p-4">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Profile Information</h3>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsEditing(!isEditing)}
-          >
-            {isEditing ? 'Cancel' : 'Edit'}
-          </Button>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Name</label>
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                value={profileData.name}
-                onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                disabled={!isEditing}
-                className="pl-10"
+          <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+            {editedUser.profilePhoto ? (
+              <img 
+                src={editedUser.profilePhoto} 
+                alt="Profile" 
+                className="w-full h-full object-cover"
               />
-            </div>
+            ) : (
+              <User className="w-12 h-12 text-gray-400" />
+            )}
           </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Store Name</label>
-            <div className="relative">
-              <Store className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                value={profileData.storeName}
-                onChange={(e) => setProfileData({ ...profileData, storeName: e.target.value })}
-                disabled={!isEditing}
-                placeholder="Enter your store name"
-                className="pl-10"
-              />
-            </div>
-          </div>
-
           {isEditing && (
             <Button
-              onClick={handleProfileUpdate}
-              className="w-full bg-primary hover:bg-blue-800"
+              size="sm"
+              className="absolute -bottom-2 -right-2 rounded-full w-8 h-8 p-0"
+              onClick={triggerPhotoUpload}
             >
-              Save Changes
+              <Camera className="w-4 h-4" />
             </Button>
           )}
         </div>
-      </Card>
+        
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handlePhotoUpload}
+          className="hidden"
+        />
 
-      {/* Password Change */}
-      <Card className="p-4">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Security</h3>
+        <h2 className="text-xl font-bold text-gray-900 mb-2">
+          {isEditing ? (
+            <Input
+              value={editedUser.name}
+              onChange={(e) => setEditedUser(prev => ({ ...prev, name: e.target.value }))}
+              className="text-center text-xl font-bold"
+            />
+          ) : (
+            user.name
+          )}
+        </h2>
+        
+        <p className="text-gray-600 mb-4">
+          {user.email ? user.email : user.phone}
+        </p>
+
+        {!isEditing ? (
           <Button
+            onClick={() => setIsEditing(true)}
             variant="outline"
-            size="sm"
-            onClick={() => setShowPasswordForm(!showPasswordForm)}
+            className="w-full"
           >
-            <Key className="w-4 h-4 mr-2" />
-            Change Password
+            <Edit2 className="w-4 h-4 mr-2" />
+            {t('edit')} {t('profile')}
           </Button>
-        </div>
-
-        {showPasswordForm && (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Current Password</label>
-              <Input
-                type="password"
-                value={passwordData.currentPassword}
-                onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                placeholder="Enter current password"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">New Password</label>
-              <div className="relative">
-                <Input
-                  type={showPassword ? "text" : "password"}
-                  value={passwordData.newPassword}
-                  onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                  placeholder="Enter new password"
-                  className="pr-10"
-                  minLength={6}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">Confirm New Password</label>
-              <div className="relative">
-                <Input
-                  type={showConfirmPassword ? "text" : "password"}
-                  value={passwordData.confirmPassword}
-                  onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                  placeholder="Confirm new password"
-                  className="pr-10"
-                  minLength={6}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                >
-                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-              <Button
-                onClick={handlePasswordChange}
-                className="flex-1 bg-primary hover:bg-blue-800"
-              >
-                Update Password
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowPasswordForm(false);
-                  setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-                }}
-                className="flex-1"
-              >
-                Cancel
-              </Button>
-            </div>
+        ) : (
+          <div className="flex gap-2">
+            <Button
+              onClick={handleSave}
+              className="flex-1"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              {t('save')}
+            </Button>
+            <Button
+              onClick={handleCancel}
+              variant="outline"
+              className="flex-1"
+            >
+              <X className="w-4 h-4 mr-2" />
+              {t('cancel')}
+            </Button>
           </div>
         )}
       </Card>
 
-      {/* Logout Button */}
+      {/* Profile Details */}
       <Card className="p-4">
-        <Button
-          onClick={handleLogout}
-          variant="destructive"
-          className="w-full"
-        >
-          <LogOut className="w-4 h-4 mr-2" />
-          Logout
-        </Button>
+        <h3 className="font-semibold mb-4">
+          {t('profile')} {language === 'en' ? 'Details' : 
+                        language === 'kn' ? 'ವಿವರಗಳು' :
+                        language === 'hi' ? 'विवरण' : 'వివరాలు'}
+        </h3>
+        
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <User className="w-5 h-5 text-gray-400" />
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t('name')}
+              </label>
+              {isEditing ? (
+                <Input
+                  value={editedUser.name}
+                  onChange={(e) => setEditedUser(prev => ({ ...prev, name: e.target.value }))}
+                />
+              ) : (
+                <p className="text-gray-900">{user.name}</p>
+              )}
+            </div>
+          </div>
+
+          {user.email && (
+            <div className="flex items-center gap-3">
+              <Mail className="w-5 h-5 text-gray-400" />
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t('email')}
+                </label>
+                <p className="text-gray-900">{user.email}</p>
+              </div>
+            </div>
+          )}
+
+          {user.phone && (
+            <div className="flex items-center gap-3">
+              <Phone className="w-5 h-5 text-gray-400" />
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t('phone')}
+                </label>
+                <p className="text-gray-900">{user.phone}</p>
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center gap-3">
+            <Store className="w-5 h-5 text-gray-400" />
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {language === 'en' ? 'Store Name' :
+                 language === 'kn' ? 'ಅಂಗಡಿಯ ಹೆಸರು' :
+                 language === 'hi' ? 'दुकान का नाम' :
+                 'దుకాణం పేరు'}
+              </label>
+              {isEditing ? (
+                <Input
+                  value={editedUser.storeName}
+                  onChange={(e) => setEditedUser(prev => ({ ...prev, storeName: e.target.value }))}
+                  placeholder={language === 'en' ? 'Enter store name' :
+                              language === 'kn' ? 'ಅಂಗಡಿಯ ಹೆಸರನ್ನು ನಮೂದಿಸಿ' :
+                              language === 'hi' ? 'दुकान का नाम दर्ज करें' :
+                              'దుకాణం పేరు నమోదు చేయండి'}
+                />
+              ) : (
+                <p className="text-gray-900">
+                  {user.storeName || (language === 'en' ? 'Not set' :
+                                     language === 'kn' ? 'ಸೆಟ್ ಮಾಡಿಲ್ಲ' :
+                                     language === 'hi' ? 'सेट नहीं किया गया' :
+                                     'సెట్ చేయలేదు')}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
       </Card>
+
+      {/* Logout Button */}
+      <Button
+        onClick={logout}
+        variant="destructive"
+        className="w-full"
+      >
+        <LogOut className="w-4 h-4 mr-2" />
+        {t('logout')}
+      </Button>
     </div>
   );
 };

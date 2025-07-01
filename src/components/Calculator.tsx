@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ArrowUp, ArrowDown, Save } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowUp, ArrowDown, Save, Mic, MicOff } from 'lucide-react';
 import { useData } from '@/contexts/DataContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
@@ -13,6 +14,8 @@ const Calculator: React.FC = () => {
   const [previousValue, setPreviousValue] = useState<number | null>(null);
   const [waitingForOperand, setWaitingForOperand] = useState(false);
   const [transactionType, setTransactionType] = useState<'cash_in' | 'cash_out'>('cash_in');
+  const [paymentMode, setPaymentMode] = useState<'cash' | 'online' | 'udhaar'>('cash');
+  const [isListening, setIsListening] = useState(false);
   
   const { addTransaction, getTodaysSummary } = useData();
   const { t } = useLanguage();
@@ -99,13 +102,66 @@ const Calculator: React.FC = () => {
     }
   };
 
+  const toggleVoiceInput = () => {
+    if (!isListening) {
+      startVoiceRecognition();
+    } else {
+      stopVoiceRecognition();
+    }
+  };
+
+  const startVoiceRecognition = () => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+      const recognition = new SpeechRecognition();
+      
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+
+      recognition.onstart = () => {
+        setIsListening(true);
+        toast.info(t('listening'));
+      };
+
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        const amount = parseFloat(transcript.replace(/[^\d.]/g, ''));
+        
+        if (!isNaN(amount) && amount > 0) {
+          setDisplay(amount.toString());
+          toast.success(`Amount set to ₹${amount}`);
+        } else {
+          toast.error('Could not recognize amount');
+        }
+      };
+
+      recognition.onerror = () => {
+        toast.error('Voice recognition error');
+        setIsListening(false);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognition.start();
+    } else {
+      toast.error('Voice recognition not supported');
+    }
+  };
+
+  const stopVoiceRecognition = () => {
+    setIsListening(false);
+  };
+
   const saveTransaction = () => {
     const amount = parseFloat(display);
     if (amount > 0) {
       addTransaction({
         amount,
         type: transactionType,
-        paymentStatus: 'paid'
+        paymentStatus: paymentMode === 'udhaar' ? 'udhaar' : 'paid'
       });
       
       toast.success(t('transactionSaved'));
@@ -149,10 +205,19 @@ const Calculator: React.FC = () => {
       {/* Calculator Display */}
       <Card className="p-4">
         <div className="text-right mb-4">
-          <div className="text-3xl font-bold text-primary mb-2 min-h-[1.2em] bg-gray-50 p-3 rounded border">
-            {formatDisplay(display)}
+          <div className="text-3xl font-bold text-primary mb-2 min-h-[1.2em] bg-gray-50 p-3 rounded border flex items-center justify-between">
+            <span>{formatDisplay(display)}</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleVoiceInput}
+              className={`ml-2 ${isListening ? 'text-red-500' : 'text-gray-500'}`}
+            >
+              {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+            </Button>
           </div>
-          <div className="flex gap-2">
+          
+          <div className="flex gap-2 mb-2">
             <Button
               variant={transactionType === 'cash_in' ? 'default' : 'outline'}
               size="sm"
@@ -171,6 +236,20 @@ const Calculator: React.FC = () => {
               <ArrowDown className="w-4 h-4 mr-1" />
               {t('cashOut')}
             </Button>
+          </div>
+
+          {/* Payment Mode Selector */}
+          <div className="mb-2">
+            <Select value={paymentMode} onValueChange={(value: 'cash' | 'online' | 'udhaar') => setPaymentMode(value)}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder={t('paymentMode')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="cash">{t('cash')}</SelectItem>
+                <SelectItem value="online">{t('online')}</SelectItem>
+                <SelectItem value="udhaar">{t('udhaar')}</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 

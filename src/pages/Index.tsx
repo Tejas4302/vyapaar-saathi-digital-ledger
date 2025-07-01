@@ -30,6 +30,22 @@ const Index = () => {
     return <AuthScreen />;
   }
 
+  const getLanguageOptions = () => {
+    switch (language) {
+      case 'kn': return 'English';
+      case 'hi': return 'ಕನ್ನಡ';
+      case 'te': return 'हिंदी';
+      default: return 'ಕನ್ನಡ';
+    }
+  };
+
+  const cycleLanguage = () => {
+    const languages: ('en' | 'kn' | 'hi' | 'te')[] = ['en', 'kn', 'hi', 'te'];
+    const currentIndex = languages.indexOf(language);
+    const nextIndex = (currentIndex + 1) % languages.length;
+    setLanguage(languages[nextIndex]);
+  };
+
   // Main app interface
   const renderScreen = () => {
     switch (activeTab) {
@@ -70,7 +86,7 @@ const Index = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setLanguage(language === 'en' ? 'kn' : 'en')}
+              onClick={cycleLanguage}
             >
               <Globe className="w-4 h-4" />
             </Button>
