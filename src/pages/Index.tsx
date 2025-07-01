@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
 
 const Index = () => {
-  const { user, logout } = useAuth();
+  const { user, profile, logout } = useAuth();
   const { t } = useLanguage();
   const [showWelcome, setShowWelcome] = useState(!user);
   const [activeTab, setActiveTab] = useState('calculator');
@@ -83,7 +83,7 @@ const Index = () => {
             />
             <div>
               <h1 className="text-lg font-bold text-primary">{t('appName')}</h1>
-              <p className="text-sm text-gray-600">{t('welcome')}, {user.name}!</p>
+              <p className="text-sm text-gray-600">{t('welcome')}, {profile?.name || t('user')}!</p>
             </div>
           </div>
           <div className="flex items-center gap-2">

@@ -112,7 +112,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const formattedTransactions: Transaction[] = data.map(t => ({
         id: t.id,
-        amount: parseFloat(t.amount),
+        amount: parseFloat(t.amount.toString()),
         type: t.type as 'cash_in' | 'cash_out',
         date: new Date(t.date),
         note: t.note,
@@ -147,7 +147,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         id: c.id,
         name: c.name,
         phone: c.phone,
-        totalOutstanding: parseFloat(c.total_outstanding || '0'),
+        totalOutstanding: parseFloat((c.total_outstanding || 0).toString()),
         transactions: transactions.filter(t => t.customerId === c.id),
         userId: c.user_id
       }));
@@ -177,8 +177,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         name: i.name,
         category: i.category,
         unit: i.unit,
-        purchasePrice: parseFloat(i.purchase_price),
-        sellingPrice: parseFloat(i.selling_price),
+        purchasePrice: parseFloat(i.purchase_price.toString()),
+        sellingPrice: parseFloat(i.selling_price.toString()),
         currentStock: i.current_stock,
         lowStockThreshold: i.low_stock_threshold,
         userId: i.user_id
@@ -198,7 +198,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .from('transactions')
         .insert({
           user_id: user.id,
-          amount: transactionData.amount,
+          amount: transactionData.amount.toString(),
           type: transactionData.type,
           note: transactionData.note,
           customer_id: transactionData.customerId,
@@ -216,14 +216,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const newTransaction: Transaction = {
         id: data.id,
-        amount: parseFloat(data.amount),
-        type: data.type,
+        amount: parseFloat(data.amount.toString()),
+        type: data.type as 'cash_in' | 'cash_out',
         date: new Date(data.date),
         note: data.note,
         customerId: data.customer_id,
         itemId: data.item_id,
-        paymentStatus: data.payment_status,
-        paymentMode: data.payment_mode,
+        paymentStatus: data.payment_status as 'paid' | 'udhaar',
+        paymentMode: data.payment_mode as 'cash' | 'online' | 'udhaar',
         userId: data.user_id
       };
 
@@ -253,11 +253,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
-      const newOutstanding = parseFloat(customer.total_outstanding || '0') + amount;
+      const newOutstanding = parseFloat((customer.total_outstanding || 0).toString()) + amount;
 
       const { error: updateError } = await supabase
         .from('customers')
-        .update({ total_outstanding: newOutstanding })
+        .update({ total_outstanding: newOutstanding.toString() })
         .eq('id', customerId);
 
       if (updateError) {
@@ -322,8 +322,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           name: itemData.name,
           category: itemData.category,
           unit: itemData.unit,
-          purchase_price: itemData.purchasePrice,
-          selling_price: itemData.sellingPrice,
+          purchase_price: itemData.purchasePrice.toString(),
+          selling_price: itemData.sellingPrice.toString(),
           current_stock: itemData.currentStock,
           low_stock_threshold: itemData.lowStockThreshold
         })
@@ -340,8 +340,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         name: data.name,
         category: data.category,
         unit: data.unit,
-        purchasePrice: parseFloat(data.purchase_price),
-        sellingPrice: parseFloat(data.selling_price),
+        purchasePrice: parseFloat(data.purchase_price.toString()),
+        sellingPrice: parseFloat(data.selling_price.toString()),
         currentStock: data.current_stock,
         lowStockThreshold: data.low_stock_threshold,
         userId: data.user_id

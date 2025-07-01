@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,11 @@ import { toast } from 'sonner';
 import { User, Edit2, X, Check, Settings } from 'lucide-react';
 import ProductTour from '@/components/ProductTour';
 
-const ProfileScreen: React.FC = () => {
+interface ProfileScreenProps {
+  onStartTour?: () => void;
+}
+
+const ProfileScreen: React.FC<ProfileScreenProps> = ({ onStartTour }) => {
   const { user, profile, logout, updateProfile } = useAuth();
   const { t } = useLanguage();
   const [isEditing, setIsEditing] = useState(false);
@@ -63,7 +68,11 @@ const ProfileScreen: React.FC = () => {
   };
 
   const startTour = () => {
-    setShowTour(true);
+    if (onStartTour) {
+      onStartTour();
+    } else {
+      setShowTour(true);
+    }
   };
 
   return (
@@ -172,7 +181,7 @@ const ProfileScreen: React.FC = () => {
       </Card>
 
       {/* Product Tour */}
-      {showTour && <ProductTour onComplete={() => setShowTour(false)} />}
+      {showTour && <ProductTour isOpen={showTour} onClose={() => setShowTour(false)} />}
     </div>
   );
 };
