@@ -198,7 +198,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .from('transactions')
         .insert({
           user_id: user.id,
-          amount: transactionData.amount.toString(),
+          amount: transactionData.amount,
           type: transactionData.type,
           note: transactionData.note,
           customer_id: transactionData.customerId,
@@ -257,7 +257,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const { error: updateError } = await supabase
         .from('customers')
-        .update({ total_outstanding: newOutstanding.toString() })
+        .update({ total_outstanding: newOutstanding })
         .eq('id', customerId);
 
       if (updateError) {
@@ -322,8 +322,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           name: itemData.name,
           category: itemData.category,
           unit: itemData.unit,
-          purchase_price: itemData.purchasePrice.toString(),
-          selling_price: itemData.sellingPrice.toString(),
+          purchase_price: itemData.purchasePrice,
+          selling_price: itemData.sellingPrice,
           current_stock: itemData.currentStock,
           low_stock_threshold: itemData.lowStockThreshold
         })
