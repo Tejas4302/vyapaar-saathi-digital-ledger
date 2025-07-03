@@ -20,7 +20,6 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ onStartTour }) => {
   const [showTour, setShowTour] = useState(false);
   const [formData, setFormData] = useState({
     name: profile?.name || '',
-    email: profile?.email || '',
     phone: profile?.phone || '',
     storeName: profile?.storeName || ''
   });
@@ -29,7 +28,6 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ onStartTour }) => {
     if (profile) {
       setFormData({
         name: profile.name || '',
-        email: profile.email || '',
         phone: profile.phone || '',
         storeName: profile.storeName || ''
       });
@@ -40,7 +38,6 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ onStartTour }) => {
     try {
       await updateProfile({
         name: formData.name,
-        email: formData.email,
         phone: formData.phone,
         storeName: formData.storeName
       });
@@ -55,7 +52,6 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ onStartTour }) => {
   const handleCancel = () => {
     setFormData({
       name: profile?.name || '',
-      email: profile?.email || '',
       phone: profile?.phone || '',
       storeName: profile?.storeName || ''
     });
@@ -120,20 +116,6 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ onStartTour }) => {
               />
             ) : (
               <p className="text-gray-700">{profile?.name || t('notSet')}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">{t('email')}</label>
-            {isEditing ? (
-              <Input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
-                placeholder={t('enterEmail')}
-              />
-            ) : (
-              <p className="text-gray-700">{profile?.email || t('notSet')}</p>
             )}
           </div>
 
