@@ -6,7 +6,6 @@ import { User, Session } from '@supabase/supabase-js';
 interface UserProfile {
   id: string;
   name: string;
-  email?: string;
   phone?: string;
   storeName?: string;
   profilePhoto?: string;
@@ -16,8 +15,8 @@ interface AuthContextType {
   user: User | null;
   profile: UserProfile | null;
   session: Session | null;
-  login: (emailOrPhone: string, password: string) => Promise<{ success: boolean; message: string }>;
-  signUp: (emailOrPhone: string, password: string, name: string, storeName?: string) => Promise<{ success: boolean; message: string }>;
+  login: (phoneNumber: string, password: string) => Promise<{ success: boolean; message: string }>;
+  signUp: (phoneNumber: string, password: string, name: string, storeName?: string) => Promise<{ success: boolean; message: string }>;
   logout: () => void;
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
   isLoading: boolean;
@@ -91,7 +90,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const userProfile: UserProfile = {
           id: data.id,
           name: data.name,
-          email: data.email,
           phone: data.phone,
           storeName: data.store_name,
           profilePhoto: data.profile_photo
@@ -105,12 +103,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const login = async (emailOrPhone: string, password: string): Promise<{ success: boolean; message: string }> => {
+  const login = async (phoneNumber: string, password: string): Promise<{ success: boolean; message: string }> => {
     setIsLoading(true);
     
     try {
+      // Convert phone number to email format for Supabase auth
+      const email = `${phoneNumber}@temp.com`;
+      
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: emailOrPhone.includes('@') ? emailOrPhone : `${emailOrPhone}@temp.com`,
+        email,
         password,
       });
 
@@ -132,11 +133,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signUp = async (emailOrPhone: string, password: string, name: string, storeName?: string): Promise<{ success: boolean; message: string }> => {
+  const signUp = async (phoneNumber: string, password: string, name: string, storeName?: string): Promise<{ success: boolean; message: string }> => {
     setIsLoading(true);
     
     try {
-      const email = emailOrPhone.includes('@') ? emailOrPhone : `${emailOrPhone}@temp.com`;
+      // Convert phone number to email format for Supabase auth
+      const email = `${phoneNumber}@temp.com`;
       const redirectUrl = `${window.location.origin}/`;
       
       const { data, error } = await supabase.auth.signUp({
@@ -146,7 +148,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           emailRedirectTo: redirectUrl,
           data: {
             name,
-            phone: emailOrPhone.includes('@') ? undefined : emailOrPhone,
+            phone: phoneNumber,
             storeName: storeName || ''
           }
         }
@@ -182,7 +184,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .from('profiles')
         .update({
           name: updates.name || profile.name,
-          email: updates.email || profile.email,
           phone: updates.phone || profile.phone,
           store_name: updates.storeName || profile.storeName,
           profile_photo: updates.profilePhoto || profile.profilePhoto

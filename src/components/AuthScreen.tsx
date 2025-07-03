@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Mail, Phone, User, Store, Lock, Eye, EyeOff } from 'lucide-react';
+import { Phone, User, Store, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import LanguageDropdown from '@/components/LanguageDropdown';
@@ -14,19 +14,17 @@ const AuthScreen: React.FC = () => {
   const { signUp, login, isLoading } = useAuth();
   const { t } = useLanguage();
   const [isSignUp, setIsSignUp] = useState(false);
-  const [emailOrPhone, setEmailOrPhone] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [storeName, setStoreName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const isEmail = emailOrPhone.includes('@');
-  const isValidPhone = /^[6-9]\d{9}$/.test(emailOrPhone);
-  const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailOrPhone);
+  const isValidPhone = /^[6-9]\d{9}$/.test(phoneNumber);
 
   const handleSignUp = async () => {
-    if (!isValidEmail && !isValidPhone) {
-      toast.error(t('pleaseEnterValidEmailOrPhone'));
+    if (!isValidPhone) {
+      toast.error(t('pleaseEnterValidPhone'));
       return;
     }
 
@@ -40,7 +38,7 @@ const AuthScreen: React.FC = () => {
       return;
     }
 
-    const result = await signUp(emailOrPhone, password, name, storeName);
+    const result = await signUp(phoneNumber, password, name, storeName);
     if (result.success) {
       toast.success(t('accountCreated'));
     } else {
@@ -49,8 +47,8 @@ const AuthScreen: React.FC = () => {
   };
 
   const handleLogin = async () => {
-    if (!isValidEmail && !isValidPhone) {
-      toast.error(t('pleaseEnterValidEmailOrPhone'));
+    if (!isValidPhone) {
+      toast.error(t('pleaseEnterValidPhone'));
       return;
     }
 
@@ -59,7 +57,7 @@ const AuthScreen: React.FC = () => {
       return;
     }
 
-    const result = await login(emailOrPhone, password);
+    const result = await login(phoneNumber, password);
     if (result.success) {
       toast.success(t('loginSuccessful'));
     } else {
@@ -68,7 +66,7 @@ const AuthScreen: React.FC = () => {
   };
 
   const resetForm = () => {
-    setEmailOrPhone('');
+    setPhoneNumber('');
     setPassword('');
     setName('');
     setStoreName('');
@@ -110,26 +108,21 @@ const AuthScreen: React.FC = () => {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">
-                    {t('email')} / {t('phone')}
+                    {t('phone')}
                   </label>
                   <div className="relative">
-                    {isEmail ? (
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    ) : (
-                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    )}
+                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
-                      type="text"
-                      placeholder={t('enterEmailOrPhone')}
-                      value={emailOrPhone}
-                      onChange={(e) => setEmailOrPhone(e.target.value)}
+                      type="tel"
+                      placeholder={t('enterPhoneNumber')}
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
                       className="pl-10"
+                      maxLength={10}
                       required
                     />
                   </div>
-                  {!isEmail && emailOrPhone && (
-                    <p className="text-xs text-gray-500 mt-1">{t('mobileNumber10Digits')}</p>
-                  )}
+                  <p className="text-xs text-gray-500 mt-1">{t('mobileNumber10Digits')}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">{t('password')}</label>
@@ -159,7 +152,7 @@ const AuthScreen: React.FC = () => {
                 <Button
                   onClick={handleLogin}
                   className="mobile-button w-full bg-primary hover:bg-blue-800"
-                  disabled={isLoading || (!isValidEmail && !isValidPhone) || !password}
+                  disabled={isLoading || !isValidPhone || !password}
                 >
                   {isLoading ? t('loggingIn') : t('login')}
                 </Button>
@@ -197,26 +190,21 @@ const AuthScreen: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">
-                    {t('email')} / {t('phone')}
+                    {t('phone')}
                   </label>
                   <div className="relative">
-                    {isEmail ? (
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    ) : (
-                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    )}
+                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
-                      type="text"
-                      placeholder={t('enterEmailOrPhone')}
-                      value={emailOrPhone}
-                      onChange={(e) => setEmailOrPhone(e.target.value)}
+                      type="tel"
+                      placeholder={t('enterPhoneNumber')}
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
                       className="pl-10"
+                      maxLength={10}
                       required
                     />
                   </div>
-                  {!isEmail && emailOrPhone && (
-                    <p className="text-xs text-gray-500 mt-1">{t('mobileNumber10Digits')}</p>
-                  )}
+                  <p className="text-xs text-gray-500 mt-1">{t('mobileNumber10Digits')}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">{t('password')}</label>
@@ -247,7 +235,7 @@ const AuthScreen: React.FC = () => {
                 <Button
                   onClick={handleSignUp}
                   className="mobile-button w-full bg-primary hover:bg-blue-800"
-                  disabled={isLoading || !name.trim() || (!isValidEmail && !isValidPhone) || password.length < 6}
+                  disabled={isLoading || !name.trim() || !isValidPhone || password.length < 6}
                 >
                   {isLoading ? t('creatingAccount') : t('signUp')}
                 </Button>

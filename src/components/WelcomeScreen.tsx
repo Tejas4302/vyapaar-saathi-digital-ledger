@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Globe, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface WelcomeScreenProps {
   onGetStarted: () => void;
@@ -11,6 +12,13 @@ interface WelcomeScreenProps {
 const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onGetStarted }) => {
   const { t, language, setLanguage } = useLanguage();
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  const languageOptions = [
+    { value: 'en', label: 'English' },
+    { value: 'kn', label: 'ಕನ್ನಡ' },
+    { value: 'hi', label: 'हिंदी' },
+    { value: 'te', label: 'తెలుగు' }
+  ];
 
   const slides = [
     {
@@ -67,35 +75,29 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onGetStarted }) => {
     setCurrentSlide(index);
   };
 
-  const getLanguageOptions = () => {
-    switch (language) {
-      case 'kn': return 'English';
-      case 'hi': return 'ಕನ್ನಡ';
-      case 'te': return 'हिंदी';
-      default: return 'ಕನ್ನಡ';
-    }
-  };
-
-  const cycleLanguage = () => {
-    const languages: ('en' | 'kn' | 'hi' | 'te')[] = ['en', 'kn', 'hi', 'te'];
-    const currentIndex = languages.indexOf(language);
-    const nextIndex = (currentIndex + 1) % languages.length;
-    setLanguage(languages[nextIndex]);
+  const getCurrentLanguageLabel = () => {
+    return languageOptions.find(option => option.value === language)?.label || 'English';
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col">
       {/* Language Selector */}
       <div className="flex justify-end p-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={cycleLanguage}
-          className="flex items-center gap-2"
-        >
+        <div className="flex items-center gap-2">
           <Globe className="w-4 h-4" />
-          {getLanguageOptions()}
-        </Button>
+          <Select value={language} onValueChange={(value: 'en' | 'kn' | 'hi' | 'te') => setLanguage(value)}>
+            <SelectTrigger className="w-auto min-w-[120px] border border-gray-300">
+              <SelectValue>{getCurrentLanguageLabel()}</SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {languageOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center px-6 text-center relative">
