@@ -4,11 +4,13 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowUp, ArrowDown, Download, Calendar } from 'lucide-react';
 import { useData } from '@/contexts/DataContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { format, isToday, isThisWeek, isThisMonth } from 'date-fns';
 import { toast } from 'sonner';
 
 const LedgerScreen: React.FC = () => {
   const { transactions } = useData();
+  const { t } = useLanguage();
   const [filter, setFilter] = useState<'today' | 'week' | 'month' | 'all'>('today');
 
   const filteredTransactions = transactions.filter(transaction => {
@@ -79,28 +81,28 @@ const LedgerScreen: React.FC = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto p-4 space-y-4 pb-20">
+    <div className="mobile-container bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Summary Card */}
-      <Card className="p-4 bg-gradient-to-r from-success to-green-600 text-white">
-        <h3 className="text-sm font-medium mb-3">Cash Flow Summary</h3>
+      <Card className="mobile-card gradient-success text-white">
+        <h3 className="text-sm font-medium mb-3 text-proper">Cash Flow Summary</h3>
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
-            <p className="text-xs opacity-80">Income</p>
+            <p className="text-xs opacity-80 text-proper">Income</p>
             <p className="text-lg font-bold">{formatCurrency(summary.income)}</p>
           </div>
           <div>
-            <p className="text-xs opacity-80">Expense</p>
+            <p className="text-xs opacity-80 text-proper">Expense</p>
             <p className="text-lg font-bold">{formatCurrency(summary.expense)}</p>
           </div>
           <div>
-            <p className="text-xs opacity-80">Net</p>
+            <p className="text-xs opacity-80 text-proper">Net</p>
             <p className="text-lg font-bold">{formatCurrency(summary.income - summary.expense)}</p>
           </div>
         </div>
       </Card>
 
       {/* Filter Buttons */}
-      <div className="flex gap-2 overflow-x-auto pb-2">
+      <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide">
         {[
           { key: 'today', label: 'Today' },
           { key: 'week', label: 'This Week' },
@@ -112,7 +114,7 @@ const LedgerScreen: React.FC = () => {
             variant={filter === filterOption.key ? 'default' : 'outline'}
             size="sm"
             onClick={() => setFilter(filterOption.key as any)}
-            className="whitespace-nowrap"
+            className={`whitespace-nowrap text-proper ${filter === filterOption.key ? 'gradient-primary' : ''}`}
           >
             {filterOption.label}
           </Button>
@@ -123,7 +125,7 @@ const LedgerScreen: React.FC = () => {
       <Button
         onClick={exportLedger}
         variant="outline"
-        className="w-full"
+        className="mobile-button mb-4 text-proper"
         disabled={filteredTransactions.length === 0}
       >
         <Download className="w-4 h-4 mr-2" />
@@ -133,13 +135,13 @@ const LedgerScreen: React.FC = () => {
       {/* Transactions List */}
       <div className="space-y-3">
         {filteredTransactions.length === 0 ? (
-          <Card className="p-6 text-center">
+          <Card className="mobile-card text-center">
             <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-            <p className="text-gray-600">No transactions found for this period</p>
+            <p className="text-gray-600 text-proper">No transactions found for this period</p>
           </Card>
         ) : (
           filteredTransactions.map((transaction) => (
-            <Card key={transaction.id} className="p-4">
+            <Card key={transaction.id} className="mobile-card">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className={`p-2 rounded-full ${
@@ -154,14 +156,14 @@ const LedgerScreen: React.FC = () => {
                     )}
                   </div>
                   <div>
-                    <p className="font-semibold">
+                    <p className="font-semibold text-proper">
                       {transaction.type === 'cash_in' ? 'Sale' : 'Expense'}
                     </p>
                     <p className="text-sm text-gray-500">
                       {format(transaction.date, 'dd MMM, HH:mm')}
                     </p>
                     {transaction.note && (
-                      <p className="text-xs text-gray-400">{transaction.note}</p>
+                      <p className="text-xs text-gray-400 text-proper">{transaction.note}</p>
                     )}
                   </div>
                 </div>
@@ -172,12 +174,12 @@ const LedgerScreen: React.FC = () => {
                     {transaction.type === 'cash_in' ? '+' : '-'}
                     {formatCurrency(transaction.amount)}
                   </p>
-                  <span className={`text-xs px-2 py-1 rounded-full ${
+                  <span className={`text-xs px-2 py-1 rounded-full text-proper ${
                     transaction.paymentStatus === 'paid' 
                       ? 'bg-green-100 text-green-700' 
                       : 'bg-orange-100 text-orange-700'
                   }`}>
-                    {transaction.paymentStatus === 'paid' ? 'Paid' : 'Udhaar'}
+                    {transaction.paymentStatus === 'paid' ? 'Paid' : 'Credit'}
                   </span>
                 </div>
               </div>

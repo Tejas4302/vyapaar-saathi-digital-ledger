@@ -71,10 +71,10 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-muted">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-3 safe-area-top">
-        <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
+      {/* Mobile Header */}
+      <div className="mobile-header safe-area-top">
+        <div className="flex items-center justify-between max-w-md mx-auto">
           <div className="flex items-center gap-3">
             <img 
               src="/lovable-uploads/592c8570-e687-4d0b-b5c3-abd42466406b.png" 
@@ -82,8 +82,8 @@ const Index = () => {
               className="w-8 h-8 rounded-full"
             />
             <div>
-              <h1 className="text-lg font-bold text-primary">{t('appName')}</h1>
-              <p className="text-sm text-gray-600">{t('welcome')}, {profile?.name || t('user')}!</p>
+              <h1 className="title-text text-lg">{t('appName')}</h1>
+              <p className="subtitle-text text-xs">{t('welcome')}, {profile?.name || t('user')}!</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -92,24 +92,16 @@ const Index = () => {
               variant="ghost"
               size="sm"
               onClick={logout}
+              className="p-2"
             >
               <LogOut className="w-4 h-4" />
             </Button>
-            <div className="text-right">
-              <p className="text-xs text-gray-500">
-                {new Date().toLocaleDateString('en-IN', { 
-                  weekday: 'short', 
-                  month: 'short', 
-                  day: 'numeric' 
-                })}
-              </p>
-            </div>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="min-h-screen pb-20">
+      <div className="mobile-content w-full">
         {renderScreen()}
       </div>
 

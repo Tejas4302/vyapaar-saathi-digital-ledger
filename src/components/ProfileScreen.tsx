@@ -72,32 +72,32 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ onStartTour }) => {
   };
 
   return (
-    <div className="max-w-md mx-auto p-4 space-y-6 pb-20">
+    <div className="mobile-container bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Profile Header */}
-      <Card className="p-6 text-center bg-gradient-to-br from-primary to-blue-600 text-white">
+      <Card className="mobile-card text-center gradient-primary text-white">
         <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
           <User className="w-8 h-8" />
         </div>
-        <h2 className="text-xl font-bold">{profile?.name || t('user')}</h2>
-        <p className="text-sm opacity-80">{profile?.storeName || t('noStoreNameSet')}</p>
+        <h2 className="text-xl font-bold text-proper">{profile?.name || t('user')}</h2>
+        <p className="text-sm opacity-80 text-proper">{profile?.storeName || t('noStoreNameSet')}</p>
       </Card>
 
       {/* Profile Details */}
-      <Card className="p-6">
+      <Card className="mobile-card">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">{t('profileDetails')}</h3>
+          <h3 className="text-lg font-semibold text-proper">{t('profileDetails')}</h3>
           {!isEditing ? (
-            <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+            <Button variant="outline" size="sm" onClick={() => setIsEditing(true)} className="text-proper">
               <Edit2 className="w-4 h-4 mr-2" />
               {t('edit')}
             </Button>
           ) : (
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={handleCancel}>
+              <Button variant="outline" size="sm" onClick={handleCancel} className="text-proper">
                 <X className="w-4 h-4 mr-1" />
                 {t('cancel')}
               </Button>
-              <Button size="sm" onClick={handleSave}>
+              <Button size="sm" onClick={handleSave} className="gradient-primary text-proper">
                 <Check className="w-4 h-4 mr-1" />
                 {t('save')}
               </Button>
@@ -107,26 +107,28 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ onStartTour }) => {
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">{t('name')}</label>
+            <label className="label-text">{t('name')}</label>
             {isEditing ? (
               <Input
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
                 placeholder={t('enterName')}
+                className="mobile-input"
               />
             ) : (
-              <p className="text-gray-700">{profile?.name || t('notSet')}</p>
+              <p className="text-gray-700 text-proper">{profile?.name || t('notSet')}</p>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">{t('phone')}</label>
+            <label className="label-text">{t('phone')}</label>
             {isEditing ? (
               <Input
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => setFormData({...formData, phone: e.target.value})}
                 placeholder={t('enterPhone')}
+                className="mobile-input"
               />
             ) : (
               <p className="text-gray-700">{profile?.phone || t('notSet')}</p>
@@ -134,28 +136,29 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ onStartTour }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">{t('storeName')}</label>
+            <label className="label-text">{t('storeName')}</label>
             {isEditing ? (
               <Input
                 value={formData.storeName}
                 onChange={(e) => setFormData({...formData, storeName: e.target.value})}
                 placeholder={t('enterStoreName')}
+                className="mobile-input"
               />
             ) : (
-              <p className="text-gray-700">{profile?.storeName || t('notSet')}</p>
+              <p className="text-gray-700 text-proper">{profile?.storeName || t('notSet')}</p>
             )}
           </div>
         </div>
       </Card>
 
       {/* Settings Card */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">{t('settings')}</h3>
+      <Card className="mobile-card">
+        <h3 className="text-lg font-semibold mb-4 text-proper">{t('settings')}</h3>
         <div className="space-y-3">
-          <Button variant="destructive" className="w-full" onClick={handleLogout}>
+          <Button variant="destructive" className="mobile-button gradient-danger text-proper" onClick={handleLogout}>
             {t('logout')}
           </Button>
-          <Button variant="secondary" className="w-full" onClick={startTour}>
+          <Button variant="secondary" className="mobile-button text-proper" onClick={startTour}>
             <Settings className="w-4 h-4 mr-2" />
             {t('productTour')}
           </Button>

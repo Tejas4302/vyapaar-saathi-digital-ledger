@@ -201,16 +201,16 @@ const Calculator: React.FC = () => {
   };
 
   return (
-    <div className="p-4 max-w-md mx-auto bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
+    <div className="mobile-container bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header with modern design */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+          <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center shadow-lg">
             <CalculatorIcon className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-800">{t('calculator')}</h1>
-            <p className="text-sm text-gray-500">Smart Business Calculator</p>
+            <h1 className="title-text">{t('calculator')}</h1>
+            <p className="subtitle-text">Smart Business Calculator</p>
           </div>
         </div>
         <Button
@@ -218,18 +218,18 @@ const Calculator: React.FC = () => {
           size="sm"
           onClick={toggleTransactionMode}
           className={`${isTransactionMode 
-            ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700' 
+            ? 'gradient-primary hover:from-blue-700 hover:to-purple-700' 
             : 'border-gray-300 hover:bg-gray-50'
-          } transition-all duration-200`}
+          } transition-all duration-200 text-proper`}
         >
           {isTransactionMode ? t('calculator') : t('transaction')}
         </Button>
       </div>
 
-      <Card className="p-6 mb-6 bg-white/80 backdrop-blur-sm border-0 shadow-xl rounded-2xl">
+      <Card className="mobile-card bg-white/80 backdrop-blur-sm shadow-xl">
         {/* Display with modern styling */}
         <div className="bg-gradient-to-r from-gray-900 to-gray-800 p-6 rounded-xl mb-6 shadow-inner">
-          <div className="text-right text-3xl font-mono font-bold text-green-400 min-h-[50px] flex items-center justify-end">
+          <div className="text-right text-3xl font-mono font-bold text-green-400 min-h-[50px] flex items-center justify-end break-all">
             ₹{display}
           </div>
         </div>
@@ -241,10 +241,10 @@ const Calculator: React.FC = () => {
               <Button
                 variant={transactionType === 'cash_in' ? 'default' : 'outline'}
                 onClick={() => setTransactionType('cash_in')}
-                className={`h-12 ${transactionType === 'cash_in' 
-                  ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600' 
+                className={`mobile-button ${transactionType === 'cash_in' 
+                  ? 'gradient-success hover:from-green-600 hover:to-emerald-600' 
                   : 'border-gray-300 hover:bg-green-50'
-                }`}
+                } text-proper`}
               >
                 <Plus className="w-4 h-4 mr-2" />
                 {t('cashIn')}
@@ -252,10 +252,10 @@ const Calculator: React.FC = () => {
               <Button
                 variant={transactionType === 'cash_out' ? 'default' : 'outline'}
                 onClick={() => setTransactionType('cash_out')}
-                className={`h-12 ${transactionType === 'cash_out' 
-                  ? 'bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600' 
+                className={`mobile-button ${transactionType === 'cash_out' 
+                  ? 'gradient-danger hover:from-red-600 hover:to-pink-600' 
                   : 'border-gray-300 hover:bg-red-50'
-                }`}
+                } text-proper`}
               >
                 <Minus className="w-4 h-4 mr-2" />
                 {t('cashOut')}
@@ -264,7 +264,7 @@ const Calculator: React.FC = () => {
 
             {/* Payment Mode */}
             <div>
-              <label className="block text-sm font-medium mb-3 text-gray-700">{t('paymentMode')}</label>
+              <label className="label-text block">{t('paymentMode')}</label>
               <PaymentModeSelector
                 value={paymentMode}
                 onChange={setPaymentMode}
@@ -274,18 +274,18 @@ const Calculator: React.FC = () => {
 
             {/* Customer Selection with Search */}
             <div>
-              <label className="block text-sm font-medium mb-2 text-gray-700">{t('selectCustomer')}</label>
+              <label className="label-text block">{t('selectCustomer')}</label>
               <Popover open={customerOpen} onOpenChange={setCustomerOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     role="combobox"
                     aria-expanded={customerOpen}
-                    className="w-full justify-between h-12 border-gray-300 hover:border-blue-400"
+                    className="mobile-input justify-between border-gray-300 hover:border-blue-400"
                   >
                     <div className="flex items-center gap-2">
                       <User className="w-4 h-4 text-gray-400" />
-                      <span className="text-gray-600">
+                      <span className="text-gray-600 text-proper">
                         {selectedCustomer
                           ? customers.find(c => c.id === selectedCustomer)?.name
                           : t('selectCustomer')}
@@ -320,7 +320,7 @@ const Calculator: React.FC = () => {
                               }`}
                             />
                             <div>
-                              <p className="font-medium">{customer.name}</p>
+                              <p className="font-medium text-proper">{customer.name}</p>
                               {customer.phone && (
                                 <p className="text-sm text-gray-500">{customer.phone}</p>
                               )}
@@ -336,18 +336,18 @@ const Calculator: React.FC = () => {
 
             {/* Item Selection with Search */}
             <div>
-              <label className="block text-sm font-medium mb-2 text-gray-700">{t('selectItem')}</label>
+              <label className="label-text block">{t('selectItem')}</label>
               <Popover open={itemOpen} onOpenChange={setItemOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     role="combobox"
                     aria-expanded={itemOpen}
-                    className="w-full justify-between h-12 border-gray-300 hover:border-blue-400"
+                    className="mobile-input justify-between border-gray-300 hover:border-blue-400"
                   >
                     <div className="flex items-center gap-2">
                       <Package className="w-4 h-4 text-gray-400" />
-                      <span className="text-gray-600">
+                      <span className="text-gray-600 text-proper">
                         {selectedItem
                           ? inventory.find(i => i.id === selectedItem)?.name
                           : t('selectItem')}
@@ -382,8 +382,8 @@ const Calculator: React.FC = () => {
                               }`}
                             />
                             <div>
-                              <p className="font-medium">{item.name}</p>
-                              <p className="text-sm text-gray-500">{item.category}</p>
+                              <p className="font-medium text-proper">{item.name}</p>
+                              <p className="text-sm text-gray-500 text-proper">{item.category}</p>
                             </div>
                           </CommandItem>
                         ))}
@@ -396,13 +396,13 @@ const Calculator: React.FC = () => {
 
             {/* Notes */}
             <div>
-              <label className="block text-sm font-medium mb-2 text-gray-700">{t('addNote')}</label>
+              <label className="label-text block">{t('addNote')}</label>
               <Textarea
                 placeholder={t('addNote')}
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 rows={3}
-                className="border-gray-300 focus:border-blue-400 focus:ring-blue-400"
+                className="border-gray-300 focus:border-blue-400 focus:ring-blue-400 rounded-xl"
               />
             </div>
           </div>
@@ -411,52 +411,63 @@ const Calculator: React.FC = () => {
         {/* Calculator Buttons with improved design */}
         <div className="grid grid-cols-4 gap-3">
           {/* Row 1 */}
-          <Button variant="outline" onClick={clear} className="h-14 bg-red-50 border-red-200 hover:bg-red-100 text-red-700 font-semibold">
+          <Button variant="outline" onClick={clear} className="calculator-button bg-red-50 border-red-200 hover:bg-red-100 text-red-700 font-semibold">
             C
           </Button>
-          <Button variant="outline" onClick={() => performOperation('/')} className="h-14 bg-blue-50 border-blue-200 hover:bg-blue-100">
+          <Button variant="outline" onClick={() => performOperation('/')} className="calculator-button calculator-operator">
             <Divide className="w-5 h-5" />
           </Button>
-          <Button variant="outline" onClick={() => performOperation('*')} className="h-14 bg-blue-50 border-blue-200 hover:bg-blue-100">
+          <Button variant="outline" onClick={() => performOperation('*')} className="calculator-button calculator-operator">
             <X className="w-5 h-5" />
           </Button>
           <Button variant="outline" onClick={() => {
             setDisplay(display.slice(0, -1) || '0');
-          }} className="h-14 bg-orange-50 border-orange-200 hover:bg-orange-100">
+          }} className="calculator-button bg-orange-50 border-orange-200 hover:bg-orange-100">
             <Delete className="w-5 h-5" />
           </Button>
 
           {/* Row 2 */}
-          <Button variant="outline" onClick={() => inputNumber('7')} className="h-14 bg-gray-50 hover:bg-gray-100 font-semibold text-lg">7</Button>
-          <Button variant="outline" onClick={() => inputNumber('8')} className="h-14 bg-gray-50 hover:bg-gray-100 font-semibold text-lg">8</Button>
-          <Button variant="outline" onClick={() => inputNumber('9')} className="h-14 bg-gray-50 hover:bg-gray-100 font-semibold text-lg">9</Button>
-          <Button variant="outline" onClick={() => performOperation('-')} className="h-14 bg-blue-50 border-blue-200 hover:bg-blue-100">
+          <Button variant="outline" onClick={() => inputNumber('7')} className="calculator-button calculator-number">7</Button>
+          <Button variant="outline" onClick={() => inputNumber('8')} className="calculator-button calculator-number">8</Button>
+          <Button variant="outline" onClick={() => inputNumber('9')} className="calculator-button calculator-number">9</Button>
+          <Button variant="outline" onClick={() => performOperation('-')} className="calculator-button calculator-operator">
             <Minus className="w-5 h-5" />
           </Button>
 
           {/* Row 3 */}
-          <Button variant="outline" onClick={() => inputNumber('4')} className="h-14 bg-gray-50 hover:bg-gray-100 font-semibold text-lg">4</Button>
-          <Button variant="outline" onClick={() => inputNumber('5')} className="h-14 bg-gray-50 hover:bg-gray-100 font-semibold text-lg">5</Button>
-          <Button variant="outline" onClick={() => inputNumber('6')} className="h-14 bg-gray-50 hover:bg-gray-100 font-semibold text-lg">6</Button>
-          <Button variant="outline" onClick={() => performOperation('+')} className="h-14 bg-blue-50 border-blue-200 hover:bg-blue-100">
+          <Button variant="outline" onClick={() => inputNumber('4')} className="calculator-button calculator-number">4</Button>
+          <Button variant="outline" onClick={() => inputNumber('5')} className="calculator-button calculator-number">5</Button>
+          <Button variant="outline" onClick={() => inputNumber('6')} className="calculator-button calculator-number">6</Button>
+          <Button variant="outline" onClick={() => performOperation('+')} className="calculator-button calculator-operator">
             <Plus className="w-5 h-5" />
           </Button>
 
           {/* Row 4 */}
-          <Button variant="outline" onClick={() => inputNumber('1')} className="h-14 bg-gray-50 hover:bg-gray-100 font-semibold text-lg">1</Button>
-          <Button variant="outline" onClick={() => inputNumber('2')} className="h-14 bg-gray-50 hover:bg-gray-100 font-semibold text-lg">2</Button>
-          <Button variant="outline" onClick={() => inputNumber('3')} className="h-14 bg-gray-50 hover:bg-gray-100 font-semibold text-lg">3</Button>
+          <Button variant="outline" onClick={() => inputNumber('1')} className="calculator-button calculator-number">1</Button>
+          <Button variant="outline" onClick={() => inputNumber('2')} className="calculator-button calculator-number">2</Button>
+          <Button variant="outline" onClick={() => inputNumber('3')} className="calculator-button calculator-number">3</Button>
           <Button 
             variant="default" 
             onClick={isTransactionMode ? handleSaveTransaction : handleEquals}
-            className="h-14 row-span-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 font-semibold"
+            className="calculator-button row-span-2 calculator-equals font-semibold"
           >
             {isTransactionMode ? t('save') : <Equal className="w-5 h-5" />}
           </Button>
 
           {/* Row 5 */}
-          <Button variant="outline" onClick={() => inputNumber('0')} className="h-14 col-span-2 bg-gray-50 hover:bg-gray-100 font-semibold text-lg">0</Button>
-          <Button variant="outline" onClick={inputDecimal} className="h-14 bg-gray-50 hover:bg-gray-100 font-semibold text-lg">.</Button>
+          <Button variant="outline" onClick={() => inputNumber('0')} className="calculator-button col-span-2 calculator-number">0</Button>
+          <Button variant="outline" onClick={inputDecimal} className="calculator-button calculator-number">.</Button>
+          
+          {/* Additional = button for non-transaction mode */}
+          {!isTransactionMode && (
+            <Button 
+              variant="default" 
+              onClick={handleEquals}
+              className="calculator-button calculator-equals font-semibold"
+            >
+              <Equal className="w-5 h-5" />
+            </Button>
+          )}
         </div>
 
         {/* Print Button for Transaction Mode */}
@@ -464,7 +475,7 @@ const Calculator: React.FC = () => {
           <div className="mt-4">
             <Button
               onClick={handlePrintBill}
-              className="w-full h-12 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 font-semibold"
+              className="mobile-button gradient-success hover:from-green-700 hover:to-emerald-700 font-semibold text-proper"
             >
               <Printer className="w-5 h-5 mr-2" />
               {t('print')}

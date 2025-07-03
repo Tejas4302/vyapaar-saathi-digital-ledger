@@ -13,14 +13,19 @@ export default {
 	theme: {
 		container: {
 			center: true,
-			padding: '2rem',
+			padding: '1rem',
 			screens: {
+				'sm': '640px',
+				'md': '768px',
+				'lg': '1024px',
+				'xl': '1280px',
 				'2xl': '1400px'
 			}
 		},
 		extend: {
 			fontFamily: {
-				'inter': ['Inter', 'sans-serif'],
+				'poppins': ['Poppins', 'sans-serif'],
+				'inter': ['Inter', 'sans-serif'], // keeping as fallback
 			},
 			colors: {
 				border: 'hsl(var(--border))',
@@ -29,19 +34,19 @@ export default {
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
 				primary: {
-					DEFAULT: 'hsl(var(--primary))',
+					DEFAULT: 'hsl(var(--primary))', // #1B3A57 - Deep Blue
 					foreground: 'hsl(var(--primary-foreground))'
 				},
 				accent: {
-					DEFAULT: 'hsl(var(--accent))',
+					DEFAULT: 'hsl(var(--accent))', // #F57C00 - Warm Orange
 					foreground: 'hsl(var(--accent-foreground))'
 				},
 				success: {
-					DEFAULT: 'hsl(var(--success))',
+					DEFAULT: 'hsl(var(--success))', // #4CAF50 - Fresh Green
 					foreground: 'hsl(var(--success-foreground))'
 				},
 				muted: {
-					DEFAULT: 'hsl(var(--muted))',
+					DEFAULT: 'hsl(var(--muted))', // #F4F4F4 - Soft Grey
 					foreground: 'hsl(var(--muted-foreground))'
 				},
 				card: {
@@ -53,6 +58,14 @@ export default {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
+			},
+			screens: {
+				'xs': '320px',
+				'sm': '640px',
+				'md': '768px',
+				'lg': '1024px',
+				'xl': '1280px',
+				'2xl': '1536px',
 			},
 			keyframes: {
 				'fade-in': {

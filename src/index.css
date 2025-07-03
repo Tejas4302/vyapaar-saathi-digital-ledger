@@ -37,12 +37,56 @@
   }
   
   body {
-    @apply bg-background text-foreground font-inter;
-    font-family: 'Inter', sans-serif;
+    @apply bg-background text-foreground font-poppins;
+    font-family: 'Poppins', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   
+  /* Mobile-first responsive utilities */
+  .mobile-container {
+    @apply w-full max-w-md mx-auto px-4 py-4 pb-20;
+  }
+  
+  .mobile-header {
+    @apply bg-white border-b border-gray-200 px-4 py-3 fixed top-0 left-0 right-0 z-40;
+  }
+  
+  .mobile-content {
+    @apply pt-16 pb-20 min-h-screen;
+  }
+  
+  .mobile-card {
+    @apply bg-white rounded-2xl p-6 shadow-lg border-0 mb-4;
+  }
+  
+  .mobile-button {
+    @apply h-12 px-6 rounded-xl font-semibold text-base transition-all duration-200 active:scale-95 w-full;
+  }
+  
+  .mobile-input {
+    @apply h-12 px-4 rounded-xl border border-gray-300 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 w-full;
+  }
+  
+  .gradient-primary {
+    @apply bg-gradient-to-r from-blue-600 to-purple-600;
+  }
+  
+  .gradient-success {
+    @apply bg-gradient-to-r from-green-500 to-emerald-500;
+  }
+  
+  .gradient-danger {
+    @apply bg-gradient-to-r from-red-500 to-pink-500;
+  }
+  
+  .gradient-warning {
+    @apply bg-gradient-to-r from-orange-500 to-amber-500;
+  }
+  
+  /* Calculator specific styles */
   .calculator-button {
-    @apply h-14 w-full rounded-lg text-lg font-semibold transition-all duration-200 active:scale-95 shadow-sm;
+    @apply h-14 w-full rounded-xl text-lg font-semibold transition-all duration-200 active:scale-95 shadow-sm;
   }
   
   .calculator-number {
@@ -50,14 +94,53 @@
   }
   
   .calculator-operator {
-    @apply bg-accent text-white hover:bg-orange-600 border-0;
+    @apply bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 border-0;
   }
   
   .calculator-action {
-    @apply bg-primary text-white hover:bg-blue-800 border-0;
+    @apply bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 border-0;
   }
   
-  .mobile-button {
-    @apply h-14 px-6 rounded-xl font-semibold text-lg transition-all duration-200 active:scale-95;
+  .calculator-equals {
+    @apply bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700 border-0;
+  }
+  
+  /* Text utilities for proper formatting */
+  .text-proper {
+    @apply first-letter:uppercase;
+  }
+  
+  .title-text {
+    @apply text-xl font-bold text-gray-800 text-proper;
+  }
+  
+  .subtitle-text {
+    @apply text-sm text-gray-600 text-proper;
+  }
+  
+  .label-text {
+    @apply text-sm font-medium text-gray-700 text-proper mb-2;
+  }
+}
+
+/* Ensure no horizontal overflow on mobile */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+}
+
+#root {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* Safe area adjustments for mobile devices */
+@supports (padding: max(0px)) {
+  .safe-area-top {
+    padding-top: max(env(safe-area-inset-top), 1rem);
+  }
+  
+  .safe-area-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom), 1rem);
   }
 }

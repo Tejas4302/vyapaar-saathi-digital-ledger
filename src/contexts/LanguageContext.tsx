@@ -1,13 +1,13 @@
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-
-type Language = 'en' | 'kn' | 'hi' | 'te';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface LanguageContextType {
-  language: Language;
-  setLanguage: (lang: Language) => void;
+  language: 'en' | 'hi';
+  setLanguage: (lang: 'en' | 'hi') => void;
   t: (key: string) => string;
 }
+
+const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 const translations = {
   en: {
@@ -16,302 +16,228 @@ const translations = {
     welcome: 'Welcome',
     user: 'User',
     
-    // Authentication
-    signUp: 'Sign Up',
-    signIn: 'Sign In',
-    logout: 'Logout',
-    name: 'Name',
-    phone: 'Phone Number',
-    storeName: 'Store Name',
-    enterName: 'Enter your name',
-    enterPhone: 'Enter Phone Number',
-    enterStoreName: 'Enter store name (optional)',
-    
-    // Calculator & Transactions
+    // Navigation
     calculator: 'Calculator',
-    transaction: 'Transaction',
+    ledger: 'Ledger',
+    customers: 'Customers',
+    inventory: 'Inventory',
+    analytics: 'Analytics',
+    profile: 'Profile',
+    
+    // Transaction types
     cashIn: 'Cash In',
     cashOut: 'Cash Out',
-    paid: 'Paid',
-    credit: 'Credit',
+    transaction: 'Transaction',
+    
+    // Payment modes
+    paymentMode: 'Payment Mode',
     cash: 'Cash',
     online: 'Online',
-    paymentMode: 'Payment Mode',
+    credit: 'Credit',
+    
+    // Form fields
     selectCustomer: 'Select Customer',
     selectItem: 'Select Item',
     addNote: 'Add Note',
+    enterName: 'Enter Name',
+    enterPhone: 'Enter Phone Number',
+    enterStoreName: 'Enter Store Name',
+    
+    // Actions
     save: 'Save',
-    print: 'Print Bill',
-    
-    // Customer management
-    customers: 'Customers',
-    addCustomer: 'Add Customer',
-    customerName: 'Customer Name',
-    phoneNumber: 'Phone Number',
-    
-    // Inventory
-    inventory: 'Inventory',
-    addItem: 'Add Item',
-    itemName: 'Item Name',
-    category: 'Category',
-    unit: 'Unit',
-    currentStock: 'Current Stock',
-    purchasePricePer: 'Purchase Price per',
-    sellingPricePer: 'Selling Price per',
-    lowStockThreshold: 'Low Stock Threshold',
-    
-    // General
-    ledger: 'Ledger',
-    analytics: 'Analytics',
-    profile: 'Profile',
     edit: 'Edit',
     delete: 'Delete',
     cancel: 'Cancel',
-    confirm: 'Confirm',
+    print: 'Print',
+    add: 'Add',
+    update: 'Update',
     
-    // Messages
-    pleaseEnterValidAmount: 'Please enter a valid amount',
-    transactionSaved: 'Transaction saved successfully',
-    failedToSaveTransaction: 'Failed to save transaction',
+    // Status messages
+    transactionSaved: 'Transaction Saved',
+    pleaseEnterValidAmount: 'Please Enter Valid Amount',
+    failedToSaveTransaction: 'Failed To Save Transaction',
+    profileUpdated: 'Profile Updated',
+    errorUpdatingProfile: 'Error Updating Profile',
+    logoutSuccessful: 'Logout Successful',
     
-    // Units
+    // Inventory
+    itemName: 'Item Name',
+    category: 'Category',
+    purchasePrice: 'Purchase Price',
+    sellingPrice: 'Selling Price',
+    currentStock: 'Current Stock',
+    lowStockThreshold: 'Low Stock Threshold',
+    unit: 'Unit',
     pieces: 'Pieces',
     kg: 'Kg',
     liters: 'Liters',
-    boxes: 'Boxes'
-  },
-  kn: {
-    // App basics
-    appName: 'ವ್ಯಾಪಾರ ಸೇತು',
-    welcome: 'ಸ್ವಾಗತ',
-    user: 'ಬಳಕೆದಾರ',
+    purchasePricePer: 'Purchase Price per',
+    sellingPricePer: 'Selling Price per',
     
-    // Authentication
-    signUp: 'ನೋಂದಣಿ',
-    signIn: 'ಪ್ರವೇಶ',
-    logout: 'ನಿರ್ಗಮನ',
-    name: 'ಹೆಸರು',
-    phone: 'ಫೋನ್ ಸಂಖ್ಯೆ',
-    storeName: 'ಅಂಗಡಿಯ ಹೆಸರು',
-    enterName: 'ನಿಮ್ಮ ಹೆಸರು ನಮೂದಿಸಿ',
-    enterPhone: 'ಫೋನ್ ಸಂಖ್ಯೆ ನಮೂದಿಸಿ',
-    enterStoreName: 'ಅಂಗಡಿಯ ಹೆಸರು ನಮೂದಿಸಿ (ಐಚ್ಛಿಕ)',
+    // Profile
+    profileDetails: 'Profile Details',
+    settings: 'Settings',
+    productTour: 'Product Tour',
+    name: 'Name',
+    phone: 'Phone',
+    storeName: 'Store Name',
+    notSet: 'Not Set',
+    noStoreNameSet: 'No Store Name Set',
+    logout: 'Logout',
     
-    // Calculator & Transactions
-    calculator: 'ಕ್ಯಾಲ್ಕುಲೇಟರ್',
-    transaction: 'ವ್ಯವಹಾರ',
-    cashIn: 'ಹಣ ಒಳಬರುವಿಕೆ',
-    cashOut: 'ಹಣ ಹೊರಹೋಗುವಿಕೆ',
-    paid: 'ಪಾವತಿಸಲಾಗಿದೆ',
-    credit: 'ಸಾಲ',
-    cash: 'ನಗದು',
-    online: 'ಆನ್‌ಲೈನ್',
-    paymentMode: 'ಪಾವತಿ ವಿಧಾನ',
-    selectCustomer: 'ಗ್ರಾಹಕರನ್ನು ಆಯ್ಕೆ ಮಾಡಿ',
-    selectItem: 'ವಸ್ತುವನ್ನು ಆಯ್ಕೆ ಮಾಡಿ',
-    addNote: 'ಟಿಪ್ಪಣಿ ಸೇರಿಸಿ',
-    save: 'ಉಳಿಸಿ',
-    print: 'ಬಿಲ್ ಮುದ್ರಿಸಿ',
-    
-    // Customer management
-    customers: 'ಗ್ರಾಹಕರು',
-    addCustomer: 'ಗ್ರಾಹಕರನ್ನು ಸೇರಿಸಿ',
-    customerName: 'ಗ್ರಾಹಕರ ಹೆಸರು',
-    phoneNumber: 'ಫೋನ್ ಸಂಖ್ಯೆ',
-    
-    // Inventory
-    inventory: 'ದಾಸ್ತಾನು',
-    addItem: 'ವಸ್ತು ಸೇರಿಸಿ',
-    itemName: 'ವಸ್ತುವಿನ ಹೆಸರು',
-    category: 'ವರ್ಗ',
-    unit: 'ಘಟಕ',
-    currentStock: 'ಪ್ರಸ್ತುತ ಸ್ಟಾಕ್',
-    purchasePricePer: 'ಪ್ರತಿ ಖರೀದಿ ಬೆಲೆ',
-    sellingPricePer: 'ಪ್ರತಿ ಮಾರಾಟ ಬೆಲೆ',
-    lowStockThreshold: 'ಕಡಿಮೆ ಸ್ಟಾಕ್ ಮಿತಿ',
-    
-    // General
-    ledger: 'ಖಾತೆ ಪುಸ್ತಕ',
-    analytics: 'ವಿಶ್ಲೇಷಣೆ',
-    profile: 'ಪ್ರೊಫೈಲ್',
-    edit: 'ಸಂಪಾದಿಸಿ',
-    delete: 'ಅಳಿಸಿ',
-    cancel: 'ರದ್ದುಮಾಡಿ',
-    confirm: 'ದೃಢೀಕರಿಸಿ',
-    
-    // Messages
-    pleaseEnterValidAmount: 'ದಯವಿಟ್ಟು ಮಾನ್ಯವಾದ ಮೊತ್ತವನ್ನು ನಮೂದಿಸಿ',
-    transactionSaved: 'ವ್ಯವಹಾರ ಯಶಸ್ವಿಯಾಗಿ ಉಳಿಸಲಾಗಿದೆ',
-    failedToSaveTransaction: 'ವ್ಯವಹಾರ ಉಳಿಸಲು ವಿಫಲವಾಗಿದೆ',
-    
-    // Units
-    pieces: 'ತುಣುಕುಗಳು',
-    kg: 'ಕೆಜಿ',
-    liters: 'ಲೀಟರ್',
-    boxes: 'ಪೆಟ್ಟಿಗೆಗಳು'
+    // Analytics
+    sales: 'Sales',
+    expenses: 'Expenses',
+    profit: 'Profit',
+    margin: 'Margin',
+    transactions: 'Transactions',
+    outstanding: 'Outstanding',
+    lowStock: 'Low Stock',
+    dailySales: 'Daily Sales',
+    thisWeek: 'This Week',
+    thisMonth: 'This Month',
+    topTransactionAmounts: 'Top Transaction Amounts',
+    times: 'Times',
+    totalUdhaar: 'Total Credit',
+    itemsRunningLow: 'Items Running Low',
+    quickInsights: 'Quick Insights',
+    businessProfitable: 'Business Profitable',
+    expensesExceeded: 'Expenses Exceeded',
+    youHave: 'You Have',
+    inPendingPayments: 'In Pending Payments',
+    itemsNeedRestocking: 'Items Need Restocking',
+    noTransactionsRecorded: 'No Transactions Recorded'
   },
   hi: {
     // App basics
-    appName: 'व्यापार सेतु',
+    appName: 'व्यापारसेतु',
     welcome: 'स्वागत',
     user: 'उपयोगकर्ता',
     
-    // Authentication
-    signUp: 'साइन अप',
-    signIn: 'साइन इन',
-    logout: 'लॉग आउट',
-    name: 'नाम',
-    phone: 'फोन नंबर',
-    storeName: 'दुकान का नाम',
-    enterName: 'अपना नाम दर्ज करें',
-    enterPhone: 'फोन नंबर दर्ज करें',
-    enterStoreName: 'दुकान का नाम दर्ज करें (वैकल्पिक)',
-    
-    // Calculator & Transactions
+    // Navigation
     calculator: 'कैलकुलेटर',
+    ledger: 'खाता बही',
+    customers: 'ग्राहक',
+    inventory: 'स्टॉक',
+    analytics: 'विश्लेषण',
+    profile: 'प्रोफाइल',
+    
+    // Transaction types
+    cashIn: 'पैसा आया',
+    cashOut: 'पैसा गया',
     transaction: 'लेन-देन',
-    cashIn: 'नकद आय',
-    cashOut: 'नकद व्यय',
-    paid: 'भुगतान किया गया',
-    credit: 'उधार',
+    
+    // Payment modes
+    paymentMode: 'भुगतान का तरीका',
     cash: 'नकद',
     online: 'ऑनलाइन',
-    paymentMode: 'भुगतान मोड',
+    credit: 'उधार',
+    
+    // Form fields
     selectCustomer: 'ग्राहक चुनें',
-    selectItem: 'वस्तु चुनें',
+    selectItem: 'सामान चुनें',
     addNote: 'नोट जोड़ें',
+    enterName: 'नाम दर्ज करें',
+    enterPhone: 'फोन नंबर दर्ज करें',
+    enterStoreName: 'दुकान का नाम दर्ज करें',
+    
+    // Actions
     save: 'सेव करें',
-    print: 'बिल प्रिंट करें',
-    
-    // Customer management
-    customers: 'ग्राहक',
-    addCustomer: 'ग्राहक जोड़ें',
-    customerName: 'ग्राहक का नाम',
-    phoneNumber: 'फोन नंबर',
-    
-    // Inventory
-    inventory: 'इन्वेंटरी',
-    addItem: 'वस्तु जोड़ें',
-    itemName: 'वस्तु का नाम',
-    category: 'श्रेणी',
-    unit: 'इकाई',
-    currentStock: 'वर्तमान स्टॉक',
-    purchasePricePer: 'प्रति खरीद मूल्य',
-    sellingPricePer: 'प्रति बिक्री मूल्य',
-    lowStockThreshold: 'कम स्टॉक सीमा',
-    
-    // General
-    ledger: 'खाता बही',
-    analytics: 'एनालिटिक्स',
-    profile: 'प्रोफाइल',
     edit: 'संपादित करें',
     delete: 'हटाएं',
     cancel: 'रद्द करें',
-    confirm: 'पुष्टि करें',
+    print: 'प्रिंट करें',
+    add: 'जोड़ें',
+    update: 'अपडेट करें',
     
-    // Messages
-    pleaseEnterValidAmount: 'कृपया एक मान्य राशि दर्ज करें',
-    transactionSaved: 'लेन-देन सफलतापूर्वक सेव किया गया',
-    failedToSaveTransaction: 'लेन-देन सेव करने में विफल',
-    
-    // Units
-    pieces: 'टुकड़े',
-    kg: 'किग्रा',
-    liters: 'लीटर',
-    boxes: 'बक्से'
-  },
-  te: {
-    // App basics
-    appName: 'వ్యాపార సేతు',
-    welcome: 'స్వాగతం',
-    user: 'వినియోగదారు',
-    
-    // Authentication
-    signUp: 'సైన్ అప్',
-    signIn: 'సైన్ ఇన్',
-    logout: 'లాగ్ అవుట్',
-    name: 'పేరు',
-    phone: 'ఫోన్ నంబర్',
-    storeName: 'దుకాణం పేరు',
-    enterName: 'మీ పేరు నమోదు చేయండి',
-    enterPhone: 'ఫోన్ నంబర్ నమోదు చేయండి',
-    enterStoreName: 'దుకాణం పేరు నమోదు చేయండి (ఐచ్ఛికం)',
-    
-    // Calculator & Transactions
-    calculator: 'కాలిక్యులేటర్',
-    transaction: 'లావాదేవీ',
-    cashIn: 'నగదు రాబడి',
-    cashOut: 'నగదు ఖర్చు',
-    paid: 'చెల్లించబడింది',
-    credit: 'అప్పు',
-    cash: 'నగదు',
-    online: 'ఆన్‌లైన్',
-    paymentMode: 'చెల్లింపు మోడ్',
-    selectCustomer: 'కస్టమర్ ఎంచుకోండి',
-    selectItem: 'వస్తువు ఎంచుకోండి',
-    addNote: 'గమనిక జోడించండి',
-    save: 'సేవ్ చేయండి',
-    print: 'బిల్ ప్రింట్ చేయండి',
-    
-    // Customer management
-    customers: 'కస్టమర్లు',
-    addCustomer: 'కస్టమర్ జోడించండి',
-    customerName: 'కస్టమర్ పేరు',
-    phoneNumber: 'ఫోన్ నంబర్',
+    // Status messages
+    transactionSaved: 'लेन-देन सेव हो गया',
+    pleaseEnterValidAmount: 'कृपया सही राशि दर्ज करें',
+    failedToSaveTransaction: 'लेन-देन सेव नहीं हुआ',
+    profileUpdated: 'प्रोफाइल अपडेट हो गया',
+    errorUpdatingProfile: 'प्रोफाइल अपडेट में त्रुटि',
+    logoutSuccessful: 'सफलतापूर्वक लॉगआउट',
     
     // Inventory
-    inventory: 'ఇన్వెంటరీ',
-    addItem: 'వస్తువు జోడించండి',
-    itemName: 'వస్తువు పేరు',
-    category: 'వర్గం',
-    unit: 'యూనిట్',
-    currentStock: 'ప్రస్తుత స్టాక్',
-    purchasePricePer: 'ప్రతి కొనుగోలు ధర',
-    sellingPricePer: 'ప్రతి అమ్మకం ధర',
-    lowStockThreshold: 'తక్కువ స్టాక్ పరిమితి',
+    itemName: 'सामान का नाम',
+    category: 'श्रेणी',
+    purchasePrice: 'खरीद मूल्य',
+    sellingPrice: 'बिक्री मूल्य',
+    currentStock: 'मौजूदा स्टॉक',
+    lowStockThreshold: 'कम स्टॉक सीमा',
+    unit: 'इकाई',
+    pieces: 'पीस',
+    kg: 'किलो',
+    liters: 'लीटर',
+    purchasePricePer: 'खरीद मूल्य प्रति',
+    sellingPricePer: 'बिक्री मूल्य प्रति',
     
-    // General
-    ledger: 'లెడ్జర్',
-    analytics: 'అనలిటిక్స్',
-    profile: 'ప్రొఫైల్',
-    edit: 'సవరించు',
-    delete: 'తొలగించు',
-    cancel: 'రద్దు చేయు',
-    confirm: 'నిర్ధారించు',
+    // Profile
+    profileDetails: 'प्रोफाइल विवरण',
+    settings: 'सेटिंग्स',
+    productTour: 'प्रोडक्ट टूर',
+    name: 'नाम',
+    phone: 'फोन',
+    storeName: 'दुकान का नाम',
+    notSet: 'सेट नहीं है',
+    noStoreNameSet: 'दुकान का नाम सेट नहीं है',
+    logout: 'लॉगआउट',
     
-    // Messages
-    pleaseEnterValidAmount: 'దయచేసి చెల్లుబాటు అయ్యే మొత్తాన్ని నమోదు చేయండి',
-    transactionSaved: 'లావాదేవీ విజయవంతంగా సేవ్ చేయబడింది',
-    failedToSaveTransaction: 'లావాదేవీ సేవ్ చేయడంలో విఫలమైంది',
-    
-    // Units
-    pieces: 'ముక్కలు',
-    kg: 'కేజీ',
-    liters: 'లీటర్లు',
-    boxes: 'పెట్టెలు'
+    // Analytics
+    sales: 'बिक्री',
+    expenses: 'खर्च',
+    profit: 'मुनाफा',
+    margin: 'मार्जिन',
+    transactions: 'लेन-देन',
+    outstanding: 'बकाया',
+    lowStock: 'कम स्टॉक',
+    dailySales: 'दैनिक बिक्री',
+    thisWeek: 'इस सप्ताह',
+    thisMonth: 'इस महीने',
+    topTransactionAmounts: 'शीर्ष लेन-देन राशि',
+    times: 'बार',
+    totalUdhaar: 'कुल उधार',
+    itemsRunningLow: 'कम होते सामान',
+    quickInsights: 'त्वरित अंतर्दृष्टि',
+    businessProfitable: 'व्यापार लाभदायक',
+    expensesExceeded: 'खर्च अधिक',
+    youHave: 'आपके पास',
+    inPendingPayments: 'बकाया भुगतान में',
+    itemsNeedRestocking: 'सामान भरना जरूरी',
+    noTransactionsRecorded: 'कोई लेन-देन दर्ज नहीं'
   }
 };
 
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [language, setLanguage] = useState<'en' | 'hi'>('en');
 
-export const useLanguage = () => {
-  const context = useContext(LanguageContext);
-  if (context === undefined) {
-    throw new Error('useLanguage must be used within a LanguageProvider');
-  }
-  return context;
-};
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('language') as 'en' | 'hi';
+    if (savedLanguage) {
+      setLanguage(savedLanguage);
+    }
+  }, []);
 
-export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [language, setLanguage] = useState<Language>('en');
+  const handleSetLanguage = (lang: 'en' | 'hi') => {
+    setLanguage(lang);
+    localStorage.setItem('language', lang);
+  };
 
   const t = (key: string): string => {
-    return translations[language][key as keyof typeof translations[typeof language]] || key;
+    return translations[language][key as keyof typeof translations['en']] || key;
   };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage: handleSetLanguage, t }}>
       {children}
     </LanguageContext.Provider>
   );
+};
+
+export const useLanguage = () => {
+  const context = useContext(LanguageContext);
+  if (!context) {
+    throw new Error('useLanguage must be used within a LanguageProvider');
+  }
+  return context;
 };
