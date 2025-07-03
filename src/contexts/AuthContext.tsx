@@ -107,11 +107,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     
     try {
-      // Convert phone number to email format for Supabase auth
-      const email = `${phoneNumber}@temp.com`;
-      
+      // Use phone number directly as the identifier
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        phone: phoneNumber,
         password,
       });
 
@@ -137,15 +135,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     
     try {
-      // Convert phone number to email format for Supabase auth
-      const email = `${phoneNumber}@temp.com`;
-      const redirectUrl = `${window.location.origin}/`;
-      
       const { data, error } = await supabase.auth.signUp({
-        email,
+        phone: phoneNumber,
         password,
         options: {
-          emailRedirectTo: redirectUrl,
           data: {
             name,
             phone: phoneNumber,
