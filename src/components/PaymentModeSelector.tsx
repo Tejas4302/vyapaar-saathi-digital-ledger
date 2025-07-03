@@ -14,21 +14,21 @@ const PaymentModeSelector: React.FC<PaymentModeSelectorProps> = ({ value, onChan
   const modes = [
     { value: 'cash' as const, label: t('cash') },
     { value: 'online' as const, label: t('online') },
-    { value: 'udhaar' as const, label: t('udhaar') }
+    { value: 'udhaar' as const, label: t('credit') }
   ];
 
   return (
-    <div className={`flex gap-2 ${className}`}>
+    <div className={`flex gap-3 ${className}`}>
       {modes.map((mode) => (
         <button
           key={mode.value}
           type="button"
           onClick={() => onChange(mode.value)}
           className={`
-            flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all
+            flex-1 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 shadow-sm
             ${value === mode.value
-              ? 'bg-blue-600 text-white shadow-md'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg transform scale-105'
+              : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300'
             }
           `}
         >

@@ -1,8 +1,11 @@
-import React, { createContext, useContext, useState } from 'react';
+
+import React, { createContext, useContext, useState, ReactNode } from 'react';
+
+type Language = 'en' | 'kn' | 'hi' | 'te';
 
 interface LanguageContextType {
-  language: 'en' | 'kn' | 'hi' | 'te';
-  setLanguage: (lang: 'en' | 'kn' | 'hi' | 'te') => void;
+  language: Language;
+  setLanguage: (lang: Language) => void;
   t: (key: string) => string;
 }
 
@@ -11,536 +14,281 @@ const translations = {
     // App basics
     appName: 'VyapaarSetu',
     welcome: 'Welcome',
-    welcomeTo: 'Welcome to VyapaarSetu',
-    getStarted: 'Get Started',
+    user: 'User',
     
-    // Auth
-    login: 'Login',
+    // Authentication
     signUp: 'Sign Up',
+    signIn: 'Sign In',
     logout: 'Logout',
-    email: 'Email',
-    phone: 'Phone',
-    password: 'Password',
     name: 'Name',
+    phone: 'Phone Number',
     storeName: 'Store Name',
-    optional: 'Optional',
     enterName: 'Enter your name',
-    enterStoreName: 'Enter store name',
-    enterEmail: 'Enter your email',
-    enterPhone: 'Enter your phone number',
-    enterEmailOrPhone: 'Enter email or phone',
-    enterPassword: 'Enter your password',
-    createPassword: 'Create a password',
-    sendOTP: 'Send OTP',
-    verifyOTP: 'Verify OTP',
-    otpSent: 'OTP sent successfully',
-    loginSuccessful: 'Login successful',
-    accountCreated: 'Account created successfully',
-    loggingIn: 'Logging in...',
-    creatingAccount: 'Creating Account...',
-    startManagingDigitally: 'Start managing your business digitally',
-    mobileNumber10Digits: 'Mobile number must be 10 digits starting with 6-9',
-    minimum6Characters: 'Minimum 6 characters',
-    pleaseEnterValidEmailOrPhone: 'Please enter a valid email or 10-digit mobile number starting with 6-9',
-    passwordMinimum6Characters: 'Password must be at least 6 characters long',
-    pleaseEnterYourName: 'Please enter your name',
-    pleaseEnterYourPassword: 'Please enter your password',
+    enterPhone: 'Enter Phone Number',
+    enterStoreName: 'Enter store name (optional)',
     
-    // Navigation
+    // Calculator & Transactions
     calculator: 'Calculator',
-    ledger: 'Ledger',
-    customers: 'Customers',
-    inventory: 'Inventory',
-    analytics: 'Analytics',
-    profile: 'Profile',
-    
-    // Calculator
-    clear: 'Clear',
-    equals: 'Equals',
-    enter: 'Enter',
-    sale: 'Sale',
-    purchase: 'Purchase',
-    expense: 'Expense',
-    income: 'Income',
-    description: 'Description',
-    amount: 'Amount',
+    transaction: 'Transaction',
     cashIn: 'Cash In',
     cashOut: 'Cash Out',
-    saveTransaction: 'Save Transaction',
-    transactionSaved: 'Transaction saved successfully',
-    todaysSummary: "Today's Summary",
-    sales: 'Sales',
-    expenses: 'Expenses',
-    net: 'Net',
-    profit: 'Profit',
-    margin: 'margin',
-    transactions: 'Transactions',
-    
-    // Payment modes
+    paid: 'Paid',
+    credit: 'Credit',
     cash: 'Cash',
     online: 'Online',
-    udhaar: 'Udhaar',
     paymentMode: 'Payment Mode',
-    
-    // Voice features
-    voiceInput: 'Voice Input',
-    speak: 'Speak',
-    listening: 'Listening...',
-    amountSetTo: 'Amount set to',
-    couldNotRecognizeAmount: 'Could not recognize amount',
-    voiceRecognitionError: 'Voice recognition error',
-    voiceRecognitionNotSupported: 'Voice recognition not supported',
-    
-    // Analytics
-    thisWeek: 'This Week',
-    thisMonth: 'This Month',
-    dailySales: 'Daily Sales',
-    topTransactionAmounts: 'Top Transaction Amounts',
-    outstanding: 'Outstanding',
-    totalUdhaar: 'Total udhaar',
-    lowStock: 'Low Stock',
-    itemsRunningLow: 'Items running low',
-    quickInsights: 'Quick Insights',
-    businessProfitable: 'Your business is profitable this',
-    expensesExceeded: 'Expenses exceeded sales this',
-    youHave: 'You have',
-    inPendingPayments: 'in pending payments',
-    itemsNeedRestocking: 'items need restocking',
-    noTransactionsRecorded: 'No transactions recorded this',
-    times: 'times',
-    
-    // Profile
-    edit: 'Edit',
+    selectCustomer: 'Select Customer',
+    selectItem: 'Select Item',
+    addNote: 'Add Note',
     save: 'Save',
-    cancel: 'Cancel',
-    delete: 'Delete',
-    search: 'Search',
-    add: 'Add',
-    total: 'Total',
-    showPassword: 'Show Password',
-    hidePassword: 'Hide Password',
-    profileDetails: 'Profile Details',
-    notSet: 'Not set',
-    photoSizeLessThan5MB: 'Photo size should be less than 5MB',
-    photoUploadedSuccessfully: 'Photo uploaded successfully!',
-    profileUpdatedSuccessfully: 'Profile updated successfully!',
-    takeProductTour: 'Take Product Tour',
-    pleaseEnterValidAmount: 'Please enter a valid amount',
+    print: 'Print Bill',
     
-    // Product Tour
-    welcomeToVyapaarSetu: 'Welcome to VyapaarSetu',
-    tourWelcomeDescription: 'Your complete digital business management solution',
-    smartCalculator: 'Smart Calculator',
-    tourCalculatorDescription: 'Calculate and record transactions with voice input support',
-    customerManagement: 'Customer Management',  
-    tourCustomerDescription: 'Track customers and their outstanding payments',
-    inventoryTracking: 'Inventory Tracking',
-    tourInventoryDescription: 'Manage your stock levels and get low stock alerts',
-    analyticsInsights: 'Analytics & Insights',
-    tourAnalyticsDescription: 'Get detailed business insights and performance metrics',
-    skip: 'Skip',
-    back: 'Back',
-    next: 'Next',
-    finish: 'Finish',
+    // Customer management
+    customers: 'Customers',
+    addCustomer: 'Add Customer',
+    customerName: 'Customer Name',
+    phoneNumber: 'Phone Number',
+    
+    // Inventory
+    inventory: 'Inventory',
+    addItem: 'Add Item',
+    itemName: 'Item Name',
+    category: 'Category',
+    unit: 'Unit',
+    currentStock: 'Current Stock',
+    purchasePricePer: 'Purchase Price per',
+    sellingPricePer: 'Selling Price per',
+    lowStockThreshold: 'Low Stock Threshold',
+    
+    // General
+    ledger: 'Ledger',
+    analytics: 'Analytics',
+    profile: 'Profile',
+    edit: 'Edit',
+    delete: 'Delete',
+    cancel: 'Cancel',
+    confirm: 'Confirm',
+    
+    // Messages
+    pleaseEnterValidAmount: 'Please enter a valid amount',
+    transactionSaved: 'Transaction saved successfully',
+    failedToSaveTransaction: 'Failed to save transaction',
+    
+    // Units
+    pieces: 'Pieces',
+    kg: 'Kg',
+    liters: 'Liters',
+    boxes: 'Boxes'
   },
   kn: {
     // App basics
-    appName: 'ವ್ಯಾಪಾರಸೇತು',
+    appName: 'ವ್ಯಾಪಾರ ಸೇತು',
     welcome: 'ಸ್ವಾಗತ',
-    welcomeTo: 'ವ್ಯಾಪಾರಸೇತುವಿಗೆ ಸ್ವಾಗತ',
-    getStarted: 'ಪ್ರಾರಂಭಿಸಿ',
+    user: 'ಬಳಕೆದಾರ',
     
-    // Auth
-    login: 'ಲಾಗಿನ್',
-    signUp: 'ಸೈನ್ ಅಪ್',
-    logout: 'ಲಾಗೌಟ್',
-    email: 'ಇಮೇಲ್',
-    phone: 'ಫೋನ್',
-    password: 'ಪಾಸ್‌ವರ್ಡ್',
+    // Authentication
+    signUp: 'ನೋಂದಣಿ',
+    signIn: 'ಪ್ರವೇಶ',
+    logout: 'ನಿರ್ಗಮನ',
     name: 'ಹೆಸರು',
+    phone: 'ಫೋನ್ ಸಂಖ್ಯೆ',
     storeName: 'ಅಂಗಡಿಯ ಹೆಸರು',
-    optional: 'ಐಚ್ಛಿಕ',
-    enterName: 'ನಿಮ್ಮ ಹೆಸರನ್ನು ನಮೂದಿಸಿ',
-    enterStoreName: 'ಅಂಗಡಿಯ ಹೆಸರನ್ನು ನಮೂದಿಸಿ',
-    enterEmail: 'ನಿಮ್ಮ ಇಮೇಲ್ ನಮೂದಿಸಿ',
-    enterPhone: 'ನಿಮ್ಮ ಫೋನ್ ಸಂಖ್ಯೆ ನಮೂದಿಸಿ',
-    enterEmailOrPhone: 'ಇಮೇಲ್ ಅಥವಾ ಫೋನ್ ನಮೂದಿಸಿ',
-    enterPassword: 'ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ',
-    createPassword: 'ಪಾಸ್‌ವರ್ಡ್ ರಚಿಸಿ',
-    loginSuccessful: 'ಲಾಗಿನ್ ಯಶಸ್ವಿಯಾಯಿತು',
-    accountCreated: 'ಖಾತೆ ಯಶಸ್ವಿಯಾಗಿ ರಚಿಸಲಾಗಿದೆ',
-    loggingIn: 'ಲಾಗಿನ್ ಆಗುತ್ತಿದೆ...',
-    creatingAccount: 'ಖಾತೆ ರಚಿಸುತ್ತಿದೆ...',
-    startManagingDigitally: 'ನಿಮ್ಮ ವ್ಯಾಪಾರವನ್ನು ಡಿಜಿಟಲ್ ಆಗಿ ನಿರ್ವಹಿಸಲು ಪ್ರಾರಂಭಿಸಿ',
-    mobileNumber10Digits: 'ಮೊಬೈಲ್ ಸಂಖ್ಯೆ 6-9 ರಿಂದ ಪ್ರಾರಂಭವಾಗುವ 10 ಅಂಕೆಗಳಾಗಿರಬೇಕು',
-    minimum6Characters: 'ಕನಿಷ್ಠ 6 ಅಕ್ಷರಗಳು',
-    pleaseEnterValidEmailOrPhone: 'ದಯವಿಟ್ಟು ಮಾನ್ಯವಾದ ಇಮೇಲ್ ಅಥವಾ 6-9 ರಿಂದ ಪ್ರಾರಂಭವಾಗುವ 10 ಅಂಕೆಗಳ ಮೊಬೈಲ್ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ',
-    passwordMinimum6Characters: 'ಪಾಸ್‌ವರ್ಡ್ ಕನಿಷ್ಠ 6 ಅಕ್ಷರಗಳಾಗಿರಬೇಕು',
-    pleaseEnterYourName: 'ದಯವಿಟ್ಟು ನಿಮ್ಮ ಹೆಸರನ್ನು ನಮೂದಿಸಿ',
-    pleaseEnterYourPassword: 'ದಯವಿಟ್ಟು ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ',
+    enterName: 'ನಿಮ್ಮ ಹೆಸರು ನಮೂದಿಸಿ',
+    enterPhone: 'ಫೋನ್ ಸಂಖ್ಯೆ ನಮೂದಿಸಿ',
+    enterStoreName: 'ಅಂಗಡಿಯ ಹೆಸರು ನಮೂದಿಸಿ (ಐಚ್ಛಿಕ)',
     
-    // Navigation
+    // Calculator & Transactions
     calculator: 'ಕ್ಯಾಲ್ಕುಲೇಟರ್',
-    ledger: 'ಲೆಡ್ಜರ್',
-    customers: 'ಗ್ರಾಹಕರು',
-    inventory: 'ದಾಸ್ತಾನು',
-    analytics: 'ವಿಶ್ಲೇಷಣೆ',
-    profile: 'ಪ್ರೊಫೈಲ್',
-    
-    // Calculator
-    clear: 'ಸ್ಪಷ್ಟ',
-    equals: 'ಸಮಾನ',
-    enter: 'ನಮೂದಿಸಿ',
-    sale: 'ಮಾರಾಟ',
-    purchase: 'ಖರೀದಿ',
-    expense: 'ವೆಚ್ಚ',
-    income: 'ಆದಾಯ',
-    description: 'ವಿವರಣೆ',
-    amount: 'ಮೊತ್ತ',
-    cashIn: 'ಹಣ ಒಳಗೆ',
-    cashOut: 'ಹಣ ಹೊರಗೆ',
-    saveTransaction: 'ವ್ಯವಹಾರ ಉಳಿಸಿ',
-    transactionSaved: 'ವ್ಯವಹಾರ ಯಶಸ್ವಿಯಾಗಿ ಉಳಿಸಲಾಗಿದೆ',
-    todaysSummary: 'ಇಂದಿನ ಸಾರಾಂಶ',
-    sales: 'ಮಾರಾಟ',
-    expenses: 'ವೆಚ್ಚಗಳು',
-    net: 'ನಿವ್ವಳ',
-    profit: 'ಲಾಭ',
-    margin: 'ಮಾರ್ಜಿನ್',
-    transactions: 'ವ್ಯವಹಾರಗಳು',
-    
-    // Payment modes
+    transaction: 'ವ್ಯವಹಾರ',
+    cashIn: 'ಹಣ ಒಳಬರುವಿಕೆ',
+    cashOut: 'ಹಣ ಹೊರಹೋಗುವಿಕೆ',
+    paid: 'ಪಾವತಿಸಲಾಗಿದೆ',
+    credit: 'ಸಾಲ',
     cash: 'ನಗದು',
     online: 'ಆನ್‌ಲೈನ್',
-    udhaar: 'ಉಧಾರ',
     paymentMode: 'ಪಾವತಿ ವಿಧಾನ',
-    
-    // Voice features
-    voiceInput: 'ಧ್ವನಿ ಇನ್‌ಪುಟ್',
-    speak: 'ಮಾತನಾಡಿ',
-    listening: 'ಕೇಳುತ್ತಿದೆ...',
-    amountSetTo: 'ಮೊತ್ತವನ್ನು ಹೊಂದಿಸಲಾಗಿದೆ',
-    couldNotRecognizeAmount: 'ಮೊತ್ತವನ್ನು ಗುರುತಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ',
-    voiceRecognitionError: 'ಧ್ವನಿ ಗುರುತಿಸುವಿಕೆ ದೋಷ',
-    voiceRecognitionNotSupported: 'ಧ್ವನಿ ಗುರುತಿಸುವಿಕೆ ಬೆಂಬಲಿತವಿಲ್ಲ',
-    
-    // Analytics
-    thisWeek: 'ಈ ವಾರ',
-    thisMonth: 'ಈ ತಿಂಗಳು',
-    dailySales: 'ದೈನಂದಿನ ಮಾರಾಟ',
-    topTransactionAmounts: 'ಪ್ರಮುಖ ವ್ಯವಹಾರ ಮೊತ್ತಗಳು',
-    outstanding: 'ಬಾಕಿ',
-    totalUdhaar: 'ಒಟ್ಟು ಉಧಾರ',
-    lowStock: 'ಕಡಿಮೆ ಸ್ಟಾಕ್',
-    itemsRunningLow: 'ವಸ್ತುಗಳು ಕಡಿಮೆಯಾಗುತ್ತಿವೆ',
-    quickInsights: 'ತ್ವರಿತ ಒಳನೋಟಗಳು',
-    businessProfitable: 'ನಿಮ್ಮ ವ್ಯಾಪಾರವು ಲಾಭದಾಯಕವಾಗಿದೆ',
-    expensesExceeded: 'ವೆಚ್ಚಗಳು ಮಾರಾಟವನ್ನು ಮೀರಿದೆ',
-    youHave: 'ನೀವು ಹೊಂದಿದ್ದೀರಿ',
-    inPendingPayments: 'ಬಾಕಿ ಪಾವತಿಗಳಲ್ಲಿ',
-    itemsNeedRestocking: 'ವಸ್ತುಗಳು ಮರುಪೂರಣದ ಅಗತ್ಯವಿದೆ',
-    noTransactionsRecorded: 'ಯಾವುದೇ ವ್ಯವಹಾರಗಳನ್ನು ದಾಖಲಿಸಲಾಗಿಲ್ಲ',
-    times: 'ಬಾರಿ',
-    
-    // Profile
-    edit: 'ಸಂಪಾದಿಸಿ',
+    selectCustomer: 'ಗ್ರಾಹಕರನ್ನು ಆಯ್ಕೆ ಮಾಡಿ',
+    selectItem: 'ವಸ್ತುವನ್ನು ಆಯ್ಕೆ ಮಾಡಿ',
+    addNote: 'ಟಿಪ್ಪಣಿ ಸೇರಿಸಿ',
     save: 'ಉಳಿಸಿ',
-    cancel: 'ರದ್ದುಮಾಡಿ',
-    delete: 'ಅಳಿಸಿ',
-    search: 'ಹುಡುಕಿ',
-    add: 'ಸೇರಿಸಿ',
-    total: 'ಒಟ್ಟು',
-    showPassword: 'ಪಾಸ್‌ವರ್ಡ್ ತೋರಿಸಿ',
-    hidePassword: 'ಪಾಸ್‌ವರ್ಡ್ ಮರೆಮಾಡಿ',
-    profileDetails: 'ಪ್ರೊಫೈಲ್ ವಿವರಗಳು',
-    notSet: 'ಸೆಟ್ ಮಾಡಿಲ್ಲ',
-    photoSizeLessThan5MB: 'ಫೋಟೋ ಗಾತ್ರ 5MB ಗಿಂತ ಕಡಿಮೆ ಇರಬೇಕು',
-    photoUploadedSuccessfully: 'ಫೋಟೋ ಯಶಸ್ವಿಯಾಗಿ ಅಪ್‌ಲೋಡ್ ಆಗಿದೆ!',
-    profileUpdatedSuccessfully: 'ಪ್ರೊಫೈಲ್ ಯಶಸ್ವಿಯಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ!',
-    takeProductTour: 'ಉತ್ಪನ್ನ ಪ್ರವಾಸ ತೆಗೆದುಕೊಳ್ಳಿ',
-    pleaseEnterValidAmount: 'ದಯವಿಟ್ಟು ಮಾನ್ಯವಾದ ಮೊತ್ತವನ್ನು ನಮೂದಿಸಿ',
+    print: 'ಬಿಲ್ ಮುದ್ರಿಸಿ',
     
-    // Product Tour
-    welcomeToVyapaarSetu: 'ವ್ಯಾಪಾರಸೇತುವಿಗೆ ಸ್ವಾಗತ',
-    tourWelcomeDescription: 'ನಿಮ್ಮ ಸಂಪೂರ್ಣ ಡಿಜಿಟಲ್ ವ್ಯಾಪಾರ ನಿರ್ವಹಣಾ ಪರಿಹಾರ',
-    smartCalculator: 'ಸ್ಮಾರ್ಟ್ ಕ್ಯಾಲ್ಕುಲೇಟರ್',
-    tourCalculatorDescription: 'ಧ್ವನಿ ಇನ್‌ಪುಟ್ ಬೆಂಬಲದೊಂದಿಗೆ ಲೆಕ್ಕಾಚಾರ ಮತ್ತು ವ್ಯವಹಾರಗಳನ್ನು ದಾಖಲಿಸಿ',
-    customerManagement: 'ಗ್ರಾಹಕ ನಿರ್ವಹಣೆ',
-    tourCustomerDescription: 'ಗ್ರಾಹಕರು ಮತ್ತು ಅವರ ಬಾಕಿ ಪಾವತಿಗಳನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ',
-    inventoryTracking: 'ದಾಸ್ತಾನು ಟ್ರ್ಯಾಕಿಂಗ್',
-    tourInventoryDescription: 'ನಿಮ್ಮ ಸ್ಟಾಕ್ ಮಟ್ಟಗಳನ್ನು ನಿರ್ವಹಿಸಿ ಮತ್ತು ಕಡಿಮೆ ಸ್ಟಾಕ್ ಎಚ್ಚರಿಕೆಗಳನ್ನು ಪಡೆಯಿರಿ',
-    analyticsInsights: 'ವಿಶ್ಲೇಷಣೆ ಮತ್ತು ಒಳನೋಟಗಳು',
-    tourAnalyticsDescription: 'ವಿವರವಾದ ವ್ಯಾಪಾರ ಒಳನೋಟಗಳು ಮತ್ತು ಕಾರ್ಯಕ್ಷಮತೆ ಮೆಟ್ರಿಕ್ಸ್ ಪಡೆಯಿರಿ',
-    skip: 'ಬಿಟ್ಟುಬಿಡಿ',
-    back: 'ಹಿಂದಕ್ಕೆ',
-    next: 'ಮುಂದೆ',
-    finish: 'ಮುಗಿಸಿ',
+    // Customer management
+    customers: 'ಗ್ರಾಹಕರು',
+    addCustomer: 'ಗ್ರಾಹಕರನ್ನು ಸೇರಿಸಿ',
+    customerName: 'ಗ್ರಾಹಕರ ಹೆಸರು',
+    phoneNumber: 'ಫೋನ್ ಸಂಖ್ಯೆ',
+    
+    // Inventory
+    inventory: 'ದಾಸ್ತಾನು',
+    addItem: 'ವಸ್ತು ಸೇರಿಸಿ',
+    itemName: 'ವಸ್ತುವಿನ ಹೆಸರು',
+    category: 'ವರ್ಗ',
+    unit: 'ಘಟಕ',
+    currentStock: 'ಪ್ರಸ್ತುತ ಸ್ಟಾಕ್',
+    purchasePricePer: 'ಪ್ರತಿ ಖರೀದಿ ಬೆಲೆ',
+    sellingPricePer: 'ಪ್ರತಿ ಮಾರಾಟ ಬೆಲೆ',
+    lowStockThreshold: 'ಕಡಿಮೆ ಸ್ಟಾಕ್ ಮಿತಿ',
+    
+    // General
+    ledger: 'ಖಾತೆ ಪುಸ್ತಕ',
+    analytics: 'ವಿಶ್ಲೇಷಣೆ',
+    profile: 'ಪ್ರೊಫೈಲ್',
+    edit: 'ಸಂಪಾದಿಸಿ',
+    delete: 'ಅಳಿಸಿ',
+    cancel: 'ರದ್ದುಮಾಡಿ',
+    confirm: 'ದೃಢೀಕರಿಸಿ',
+    
+    // Messages
+    pleaseEnterValidAmount: 'ದಯವಿಟ್ಟು ಮಾನ್ಯವಾದ ಮೊತ್ತವನ್ನು ನಮೂದಿಸಿ',
+    transactionSaved: 'ವ್ಯವಹಾರ ಯಶಸ್ವಿಯಾಗಿ ಉಳಿಸಲಾಗಿದೆ',
+    failedToSaveTransaction: 'ವ್ಯವಹಾರ ಉಳಿಸಲು ವಿಫಲವಾಗಿದೆ',
+    
+    // Units
+    pieces: 'ತುಣುಕುಗಳು',
+    kg: 'ಕೆಜಿ',
+    liters: 'ಲೀಟರ್',
+    boxes: 'ಪೆಟ್ಟಿಗೆಗಳು'
   },
   hi: {
     // App basics
-    appName: 'व्यापारसेतु',
+    appName: 'व्यापार सेतु',
     welcome: 'स्वागत',
-    welcomeTo: 'व्यापारसेतु में आपका स्वागत है',
-    getStarted: 'शुरू करें',
+    user: 'उपयोगकर्ता',
     
-    // Auth
-    login: 'लॉगिन',
+    // Authentication
     signUp: 'साइन अप',
-    logout: 'लॉगआउट',
-    email: 'ईमेल',
-    phone: 'फोन',
-    password: 'पासवर्ड',
+    signIn: 'साइन इन',
+    logout: 'लॉग आउट',
     name: 'नाम',
+    phone: 'फोन नंबर',
     storeName: 'दुकान का नाम',
-    optional: 'वैकल्पिक',
     enterName: 'अपना नाम दर्ज करें',
-    enterStoreName: 'दुकान का नाम दर्ज करें',
-    enterEmail: 'अपना ईमेल दर्ज करें',
-    enterPhone: 'अपना फोन नंबर दर्ज करें',
-    enterEmailOrPhone: 'ईमेल या फोन दर्ज करें',
-    enterPassword: 'अपना पासवर्ड दर्ज करें',
-    createPassword: 'पासवर्ड बनाएं',
-    loginSuccessful: 'लॉगिन सफल',
-    accountCreated: 'खाता सफलतापूर्वक बनाया गया',
-    loggingIn: 'लॉगिन हो रहा है...',
-    creatingAccount: 'खाता बनाया जा रहा है...',
-    startManagingDigitally: 'अपने व्यापार को डिजिटल रूप से प्रबंधित करना शुरू करें',
-    mobileNumber10Digits: 'मोबाइल नंबर 6-9 से शुरू होने वाले 10 अंकों का होना चाहिए',
-    minimum6Characters: 'न्यूनतम 6 अक्षर',
-    pleaseEnterValidEmailOrPhone: 'कृपया एक वैध ईमेल या 6-9 से शुरू होने वाला 10 अंकों का мोबाइल नंबर दर्ज करें',
-    passwordMinimum6Characters: 'पासवर्ड कम से कम 6 अक्षरों का होना चाहिए',
-    pleaseEnterYourName: 'कृपया अपना नाम दर्ज करें',
-    pleaseEnterYourPassword: 'कृपया अपना पासवर्ड दर्ज करें',
+    enterPhone: 'फोन नंबर दर्ज करें',
+    enterStoreName: 'दुकान का नाम दर्ज करें (वैकल्पिक)',
     
-    // Navigation
+    // Calculator & Transactions
     calculator: 'कैलकुलेटर',
-    ledger: 'खाता बही',
-    customers: 'ग्राहक',
-    inventory: 'इन्वेंटरी',
-    analytics: 'विश्लेषण',
-    profile: 'प्रोफाइल',
-    
-    // Calculator
-    clear: 'साफ़ करें',
-    equals: 'बराबर',
-    enter: 'दर्ज करें',
-    sale: 'बिक्री',
-    purchase: 'खरीदारी',
-    expense: 'खर्च',
-    income: 'आय',
-    description: 'विवरण',
-    amount: 'राशि',
+    transaction: 'लेन-देन',
     cashIn: 'नकद आय',
     cashOut: 'नकद व्यय',
-    saveTransaction: 'लेनदेन सहेजें',
-    transactionSaved: 'लेनदेन सफलतापूर्वक सहेजा गया',
-    todaysSummary: 'आज का सारांश',
-    sales: 'बिक्री',
-    expenses: 'खर्च',
-    net: 'शुद्ध',
-    profit: 'लाभ',
-    margin: 'मार्जिन',
-    transactions: 'लेनदेन',
-    
-    // Payment modes
+    paid: 'भुगतान किया गया',
+    credit: 'उधार',
     cash: 'नकद',
     online: 'ऑनलाइन',
-    udhaar: 'उधार',
-    paymentMode: 'भुगतान विधि',
+    paymentMode: 'भुगतान मोड',
+    selectCustomer: 'ग्राहक चुनें',
+    selectItem: 'वस्तु चुनें',
+    addNote: 'नोट जोड़ें',
+    save: 'सेव करें',
+    print: 'बिल प्रिंट करें',
     
-    // Voice features
-    voiceInput: 'आवाज़ इनपुट',
-    speak: 'बोलें',
-    listening: 'सुन रहा है...',
-    amountSetTo: 'राशि सेट की गई',
-    couldNotRecognizeAmount: 'राशि को पहचान नहीं सका',
-    voiceRecognitionError: 'आवाज़ पहचान त्रुटि',
-    voiceRecognitionNotSupported: 'आवाज़ पहचान समर्थित नहीं',
+    // Customer management
+    customers: 'ग्राहक',
+    addCustomer: 'ग्राहक जोड़ें',
+    customerName: 'ग्राहक का नाम',
+    phoneNumber: 'फोन नंबर',
     
-    // Analytics
-    thisWeek: 'इस सप्ताह',
-    thisMonth: 'इस महीने',
-    dailySales: 'दैनिक बिक्री',
-    topTransactionAmounts: 'शीर्ष लेनदेन राशि',
-    outstanding: 'बकाया',
-    totalUdhaar: 'कुल उधार',
-    lowStock: 'कम स्टॉक',
-    itemsRunningLow: 'आइटम कम हो रहे हैं',
-    quickInsights: 'त्वरित अंतर्दृष्टि',
-    businessProfitable: 'आपका व्यापार लाभदायक है',
-    expensesExceeded: 'खर्च ने बिक्री को पार कर लिया',
-    youHave: 'आपके पास है',
-    inPendingPayments: 'लंबित भुगतान में',
-    itemsNeedRestocking: 'आइटम को फिर से स्टॉक करने की आवश्यकता है',
-    noTransactionsRecorded: 'कोई लेनदेन दर्ज नहीं किया गया',
-    times: 'बार',
+    // Inventory
+    inventory: 'इन्वेंटरी',
+    addItem: 'वस्तु जोड़ें',
+    itemName: 'वस्तु का नाम',
+    category: 'श्रेणी',
+    unit: 'इकाई',
+    currentStock: 'वर्तमान स्टॉक',
+    purchasePricePer: 'प्रति खरीद मूल्य',
+    sellingPricePer: 'प्रति बिक्री मूल्य',
+    lowStockThreshold: 'कम स्टॉक सीमा',
     
-    // Profile
+    // General
+    ledger: 'खाता बही',
+    analytics: 'एनालिटिक्स',
+    profile: 'प्रोफाइल',
     edit: 'संपादित करें',
-    save: 'सहेजें',
-    cancel: 'रद्द करें',
     delete: 'हटाएं',
-    search: 'खोजें',
-    add: 'जोड़ें',
-    total: 'कुल',
-    showPassword: 'पासवर्ड दिखाएं',
-    hidePassword: 'पासवर्ड छुपाएं',
-    profileDetails: 'प्रोफाइल विवरण',
-    notSet: 'सेट नहीं किया गया',
-    photoSizeLessThan5MB: 'फोटो का आकार 5MB से कम होना चाहिए',
-    photoUploadedSuccessfully: 'फोटो सफलतापूर्वक अपलोड हुई!',
-    profileUpdatedSuccessfully: 'प्रोफाइल सफलतापूर्वक अपडेट हुई!',
-    takeProductTour: 'उत्पाद यात्रा लें',
-    pleaseEnterValidAmount: 'कृपया एक वैध राशि दर्ज करें',
+    cancel: 'रद्द करें',
+    confirm: 'पुष्टि करें',
     
-    // Product Tour
-    welcomeToVyapaarSetu: 'व्यापारसेतु में आपका स्वागत है',
-    tourWelcomeDescription: 'आपका संपूर्ण डिजिटल व्यापार प्रबंधन समाधान',
-    smartCalculator: 'स्मार्ट कैलकुलेटर',
-    tourCalculatorDescription: 'आवाज़ इनपुट समर्थन के साथ गणना और लेनदेन रिकॉर्ड करें',
-    customerManagement: 'ग्राहक प्रबंधन',
-    tourCustomerDescription: 'ग्राहकों और उनके बकाया भुगतान को ट्रैक करें',
-    inventoryTracking: 'इन्वेंटरी ट्रैकिंग',
-    tourInventoryDescription: 'अपने स्टॉक स्तर का प्रबंधन करें और कम स्टॉक अलर्ट प्राप्त करें',
-    analyticsInsights: 'विश्लेषण और अंतर्दृष्टि',
-    tourAnalyticsDescription: 'विस्तृत व्यापार अंतर्दृष्टि और प्रदर्शन मेट्रिक्स प्राप्त करें',
-    skip: 'छोड़ें',
-    back: 'वापस',
-    next: 'आगे',
-    finish: 'समाप्त',
+    // Messages
+    pleaseEnterValidAmount: 'कृपया एक मान्य राशि दर्ज करें',
+    transactionSaved: 'लेन-देन सफलतापूर्वक सेव किया गया',
+    failedToSaveTransaction: 'लेन-देन सेव करने में विफल',
+    
+    // Units
+    pieces: 'टुकड़े',
+    kg: 'किग्रा',
+    liters: 'लीटर',
+    boxes: 'बक्से'
   },
   te: {
     // App basics
-    appName: 'వ్యాపారసేతు',
+    appName: 'వ్యాపార సేతు',
     welcome: 'స్వాగతం',
-    welcomeTo: 'వ్యాపారసేతుకు స్వాగతం',
-    getStarted: 'ప్రారంభించండి',
+    user: 'వినియోగదారు',
     
-    // Auth
-    login: 'లాగిన్',
+    // Authentication
     signUp: 'సైన్ అప్',
-    logout: 'లాగౌట్',
-    email: 'ఇమెయిల్',
-    phone: 'ఫోన్',
-    password: 'పాస్‌వర్డ్',
+    signIn: 'సైన్ ఇన్',
+    logout: 'లాగ్ అవుట్',
     name: 'పేరు',
+    phone: 'ఫోన్ నంబర్',
     storeName: 'దుకాణం పేరు',
-    optional: 'ఐచ్ఛికం',
     enterName: 'మీ పేరు నమోదు చేయండి',
-    enterStoreName: 'దుకాణం పేరు నమోదు చేయండి',
-    enterEmail: 'మీ ఇమెయిల్ నమోదు చేయండి',
-    enterPhone: 'మీ ఫోన్ నంబర్ నమోదు చేయండి',
-    enterEmailOrPhone: 'ఇమెయిల్ లేదా ఫోన్ నమోదు చేయండి',
-    enterPassword: 'మీ పాస్‌వర్డ్ నమోదు చేయండి',
-    createPassword: 'పాస్‌వర్డ్ సృష్టించండి',
-    loginSuccessful: 'లాగిన్ విజయవంతం',
-    accountCreated: 'ఖాతా విజయవంతంగా సృష్టించబడింది',
-    loggingIn: 'లాగిన్ అవుతోంది...',
-    creatingAccount: 'ఖాతా సృష్టిస్తోంది...',
-    startManagingDigitally: 'మీ వ్యాపారాన్ని డిజిటల్‌గా నిర్వహించడం ప్రారంభించండి',
-    mobileNumber10Digits: 'మొబైల్ నంబర్ 6-9తో ప్రారంభమయ్యే 10 అంకెలు ఉండాలి',
-    minimum6Characters: 'కనీసం 6 అక్షరాలు',
-    pleaseEnterValidEmailOrPhone: 'దయచేసి చెల్లుబాటు అయ్యే ఇమెయిల్ లేదా 6-9తో ప్రారంభమయ్యే 10 అంకెల మొబైల్ నంబర్ నమోదు చేయండి',
-    passwordMinimum6Characters: 'పాస్‌వర్డ్ కనీసం 6 అక్షరాలు ఉండాలి',
-    pleaseEnterYourName: 'దయచేసి మీ పేరు నమోదు చేయండి',
-    pleaseEnterYourPassword: 'దయచేసి మీ పాస్‌వర్డ్ నమోదు చేయండి',
+    enterPhone: 'ఫోన్ నంబర్ నమోదు చేయండి',
+    enterStoreName: 'దుకాణం పేరు నమోదు చేయండి (ఐచ్ఛికం)',
     
-    // Navigation
+    // Calculator & Transactions
     calculator: 'కాలిక్యులేటర్',
-    ledger: 'లెడ్జర్',
-    customers: 'కస్టమర్లు',
-    inventory: 'ఇన్వెంటరీ',
-    analytics: 'విశ్లేషణలు',
-    profile: 'ప్రొఫైల్',
-    
-    // Calculator
-    clear: 'క్లియర్',
-    equals: 'సమానం',
-    enter: 'ఎంటర్',
-    sale: 'అమ్మకం',
-    purchase: 'కొనుగోలు',
-    expense: 'ఖర్చు',
-    income: 'ఆదాయం',
-    description: 'వివరణ',
-    amount: 'మొత్తం',
-    cashIn: 'నగదు ఆదాయం',
+    transaction: 'లావాదేవీ',
+    cashIn: 'నగదు రాబడి',
     cashOut: 'నగదు ఖర్చు',
-    saveTransaction: 'లావాదేవీ సేవ్ చేయండి',
-    transactionSaved: 'లావాదేవీ విజయవంతంగా సేవ్ చేయబడింది',
-    todaysSummary: 'నేటి సారాంశం',
-    sales: 'అమ్మకాలు',
-    expenses: 'ఖర్చులు',
-    net: 'నెట్',
-    profit: 'లాభం',
-    margin: 'మార్జిన్',
-    transactions: 'లావాదేవీలు',
-    
-    // Payment modes
+    paid: 'చెల్లించబడింది',
+    credit: 'అప్పు',
     cash: 'నగదు',
     online: 'ఆన్‌లైన్',
-    udhaar: 'ఉధార్',
-    paymentMode: 'చెల్లింపు విధానం',
-    
-    // Voice features
-    voiceInput: 'వాయిస్ ఇన్‌పుట్',
-    speak: 'మాట్లాడండి',
-    listening: 'వింటోంది...',
-    amountSetTo: 'మొత్తం సెట్ చేయబడింది',
-    couldNotRecognizeAmount: 'మొత్తాన్ని గుర్తించలేకపోయింది',
-    voiceRecognitionError: 'వాయిస్ గుర్తింపు లోపం',
-    voiceRecognitionNotSupported: 'వాయిస్ గుర్తింపు మద్దతు లేదు',
-    
-    // Analytics
-    thisWeek: 'ఈ వారం',
-    thisMonth: 'ఈ నెల',
-    dailySales: 'రోజువారీ అమ్మకాలు',
-    topTransactionAmounts: 'టాప్ లావాదేవీ మొత్తాలు',
-    outstanding: 'బకాయి',
-    totalUdhaar: 'మొత్తం ఉధార్',
-    lowStock: 'తక్కువ స్టాక్',
-    itemsRunningLow: 'వస్తువులు తక్కువయ్యాయి',
-    quickInsights: 'త్వరిత అవగాహనలు',
-    businessProfitable: 'మీ వ్యాపారం లాభదాయకంగా ఉంది',
-    expensesExceeded: 'ఖర్చులు అమ్మకాలను మించిపోయాయి',
-    youHave: 'మీకు ఉంది',
-    inPendingPayments: 'పెండింగ్ చెల్లింపులలో',
-    itemsNeedRestocking: 'వస్తువులకు రీస్టాకింగ్ అవసరం',
-    noTransactionsRecorded: 'లావాదేవీలు రికార్డ్ చేయబడలేదు',
-    times: 'సార్లు',
-    
-    // Profile
-    edit: 'ఎడిట్ చేయండి',
+    paymentMode: 'చెల్లింపు మోడ్',
+    selectCustomer: 'కస్టమర్ ఎంచుకోండి',
+    selectItem: 'వస్తువు ఎంచుకోండి',
+    addNote: 'గమనిక జోడించండి',
     save: 'సేవ్ చేయండి',
-    cancel: 'రద్దు చేయండి',
-    delete: 'తొలగించండి',
-    search: 'వెతకండి',
-    add: 'జోడించండి',
-    total: 'మొత్తం',
-    showPassword: 'పాస్‌వర్డ్ చూపించండి',
-    hidePassword: 'పాస్‌వర్డ్ దాచండి',
-    profileDetails: 'ప్రొఫైల్ వివరాలు',
-    notSet: 'సెట్ చేయబడలేదు',
-    photoSizeLessThan5MB: 'ఫోటో సైజ్ 5MB కంటే తక్కువగా ఉండాలి',
-    photoUploadedSuccessfully: 'ఫోటో విజయవంతంగా అప్‌లోడ్ అయింది!',
-    profileUpdatedSuccessfully: 'ప్రొఫైల్ విజయవంతంగా అప్‌డేట్ అయింది!',
-    takeProductTour: 'ప్రొడక్ట్ టూర్ తీసుకోండి',
-    pleaseEnterValidAmount: 'దయచేసి చెల్లుబాటు అయ్యే మొత్తాన్ని నమోదు చేయండి',
+    print: 'బిల్ ప్రింట్ చేయండి',
     
-    // Product Tour
-    welcomeToVyapaarSetu: 'వ్యాపారసేతుకు స్వాగతం',
-    tourWelcomeDescription: 'మీ పూర్తి డిజిటల్ వ్యాపార నిర్వహణ పరిష్కారం',
-    smartCalculator: 'స్మార్ట్ కాలిక్యులేటర్',
-    tourCalculatorDescription: 'వాయిస్ ఇన్‌పుట్ మద్దతుతో లెక్కలు మరియు లావాదేవీలను రికార్డ్ చేయండి',
-    customerManagement: 'కస్టమర్ నిర్వహణ',
-    tourCustomerDescription: 'కస్టమర్లు మరియు వారి బకాయి చెల్లింపులను ట్రాక్ చేయండి',
-    inventoryTracking: 'ఇన్వెంటరీ ట్రాకింగ్',
-    tourInventoryDescription: 'మీ స్టాక్ స్థాయిలను నిర్వహించండి మరియు తక్కువ స్టాక్ అలర్ట్‌లను పొందండి',
-    analyticsInsights: 'విశ్లేషణ మరియు అవగాహనలు',
-    tourAnalyticsDescription: 'వివరణాత్మక వ్యాపార అవగాహనలు మరియు పనితీరు మెట్రిక్‌లను పొందండి',
-    skip: 'దాటవేయండి',
-    back: 'వెనుకకు',
-    next: 'ముందుగా',
-    finish: 'ముగించు',
+    // Customer management
+    customers: 'కస్టమర్లు',
+    addCustomer: 'కస్టమర్ జోడించండి',
+    customerName: 'కస్టమర్ పేరు',
+    phoneNumber: 'ఫోన్ నంబర్',
+    
+    // Inventory
+    inventory: 'ఇన్వెంటరీ',
+    addItem: 'వస్తువు జోడించండి',
+    itemName: 'వస్తువు పేరు',
+    category: 'వర్గం',
+    unit: 'యూనిట్',
+    currentStock: 'ప్రస్తుత స్టాక్',
+    purchasePricePer: 'ప్రతి కొనుగోలు ధర',
+    sellingPricePer: 'ప్రతి అమ్మకం ధర',
+    lowStockThreshold: 'తక్కువ స్టాక్ పరిమితి',
+    
+    // General
+    ledger: 'లెడ్జర్',
+    analytics: 'అనలిటిక్స్',
+    profile: 'ప్రొఫైల్',
+    edit: 'సవరించు',
+    delete: 'తొలగించు',
+    cancel: 'రద్దు చేయు',
+    confirm: 'నిర్ధారించు',
+    
+    // Messages
+    pleaseEnterValidAmount: 'దయచేసి చెల్లుబాటు అయ్యే మొత్తాన్ని నమోదు చేయండి',
+    transactionSaved: 'లావాదేవీ విజయవంతంగా సేవ్ చేయబడింది',
+    failedToSaveTransaction: 'లావాదేవీ సేవ్ చేయడంలో విఫలమైంది',
+    
+    // Units
+    pieces: 'ముక్కలు',
+    kg: 'కేజీ',
+    liters: 'లీటర్లు',
+    boxes: 'పెట్టెలు'
   }
 };
 
@@ -548,17 +296,17 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export const useLanguage = () => {
   const context = useContext(LanguageContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useLanguage must be used within a LanguageProvider');
   }
   return context;
 };
 
-export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguage] = useState<'en' | 'kn' | 'hi' | 'te'>('en');
+export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [language, setLanguage] = useState<Language>('en');
 
   const t = (key: string): string => {
-    return translations[language][key as keyof typeof translations['en']] || key;
+    return translations[language][key as keyof typeof translations[typeof language]] || key;
   };
 
   return (
