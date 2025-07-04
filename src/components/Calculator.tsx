@@ -448,9 +448,7 @@ const Calculator: React.FC = () => {
                 =
               </>
             ) : (
-              <>
-                =
-              </>
+              "="
             )}
           </Button>
         </div>
