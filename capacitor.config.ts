@@ -2,7 +2,7 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.vyapaarsetu.com',
+  appId: 'com.vyapaarsetu.app',
   appName: 'VyapaarSetu',
   webDir: 'dist',
   server: {
