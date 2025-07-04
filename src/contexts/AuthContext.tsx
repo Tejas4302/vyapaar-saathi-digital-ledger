@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
@@ -19,6 +18,7 @@ interface AuthContextType {
   signUp: (phoneNumber: string, password: string, name: string, storeName?: string) => Promise<{ success: boolean; message: string }>;
   logout: () => void;
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
+  deleteAccount: () => Promise<void>;
   isLoading: boolean;
 }
 
@@ -169,6 +169,61 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await supabase.auth.signOut();
   };
 
+  const deleteAccount = async () => {
+    if (!user) return;
+
+    try {
+      // Delete user's data from custom tables first
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (profileError) {
+        console.error('Error deleting profile:', profileError);
+      }
+
+      const { error: customersError } = await supabase
+        .from('customers')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (customersError) {
+        console.error('Error deleting customers:', customersError);
+      }
+
+      const { error: inventoryError } = await supabase
+        .from('inventory_items')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (inventoryError) {
+        console.error('Error deleting inventory:', inventoryError);
+      }
+
+      const { error: transactionsError } = await supabase
+        .from('transactions')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (transactionsError) {
+        console.error('Error deleting transactions:', transactionsError);
+      }
+
+      // Finally delete the auth user
+      const { error: authError } = await supabase.auth.admin.deleteUser(user.id);
+      
+      if (authError) {
+        console.error('Error deleting auth user:', authError);
+        // If we can't delete the auth user, at least sign them out
+        await supabase.auth.signOut();
+      }
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      throw error;
+    }
+  };
+
   const updateProfile = async (updates: Partial<UserProfile>) => {
     if (!user || !profile) return;
 
@@ -205,6 +260,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       signUp, 
       logout, 
       updateProfile,
+      deleteAccount,
       isLoading 
     }}>
       {children}

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
-import { User, Edit2, X, Check, Settings } from 'lucide-react';
+import { User, Edit2, X, Check, Settings, Trash2 } from 'lucide-react';
 import ProductTour from '@/components/ProductTour';
 
 interface ProfileScreenProps {
@@ -14,10 +13,11 @@ interface ProfileScreenProps {
 }
 
 const ProfileScreen: React.FC<ProfileScreenProps> = ({ onStartTour }) => {
-  const { user, profile, logout, updateProfile } = useAuth();
+  const { user, profile, logout, updateProfile, deleteAccount } = useAuth();
   const { t } = useLanguage();
   const [isEditing, setIsEditing] = useState(false);
   const [showTour, setShowTour] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [formData, setFormData] = useState({
     name: profile?.name || '',
     phone: profile?.phone || '',
@@ -68,6 +68,16 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ onStartTour }) => {
       onStartTour();
     } else {
       setShowTour(true);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      await deleteAccount();
+      toast.success('Account deleted successfully');
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      toast.error('Failed to delete account');
     }
   };
 
@@ -162,6 +172,42 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ onStartTour }) => {
             <Settings className="w-4 h-4 mr-2" />
             {t('productTour')}
           </Button>
+          
+          {/* Delete Account Section */}
+          {!showDeleteConfirm ? (
+            <Button 
+              variant="destructive" 
+              className="mobile-button bg-red-600 hover:bg-red-700 text-white border-red-600"
+              onClick={() => setShowDeleteConfirm(true)}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete Account
+            </Button>
+          ) : (
+            <div className="space-y-2 p-3 bg-red-50 rounded-lg border border-red-200">
+              <p className="text-sm text-red-800 font-medium">
+                Are you sure you want to delete your account? This action cannot be undone.
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="text-proper"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={handleDeleteAccount}
+                  className="bg-red-600 hover:bg-red-700 text-proper"
+                >
+                  Yes, Delete Account
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </Card>
 
