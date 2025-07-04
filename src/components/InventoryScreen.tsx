@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,7 +10,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
 
 const InventoryScreen: React.FC = () => {
-  const { inventory, addInventoryItem, updateStock } = useData();
+  const { inventory, addInventoryItem, updateStock, deleteInventoryItem } = useData();
   const { t } = useLanguage();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
@@ -61,9 +60,14 @@ const InventoryScreen: React.FC = () => {
     toast.success(change > 0 ? 'Stock added!' : 'Stock removed!');
   };
 
-  const handleDeleteItem = (itemId: string) => {
-    // Note: This would need to be implemented in DataContext
-    toast.success('Item deleted!');
+  const handleDeleteItem = async (itemId: string) => {
+    try {
+      await deleteInventoryItem(itemId);
+      toast.success('Item deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      toast.error('Failed to delete item');
+    }
   };
 
   const formatCurrency = (amount: number) => {

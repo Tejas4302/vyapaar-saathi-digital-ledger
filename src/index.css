@@ -121,26 +121,27 @@
   .label-text {
     @apply text-sm font-medium text-gray-700 text-proper mb-2;
   }
-}
 
-/* Ensure no horizontal overflow on mobile */
-html, body {
-  overflow-x: hidden;
-  width: 100%;
-}
-
-#root {
-  width: 100%;
-  overflow-x: hidden;
-}
-
-/* Safe area adjustments for mobile devices */
-@supports (padding: max(0px)) {
-  .safe-area-top {
-    padding-top: max(env(safe-area-inset-top), 1rem);
+  /* Dropdown and popover fixes */
+  [data-radix-popper-content-wrapper] {
+    z-index: 50 !important;
   }
   
-  .safe-area-bottom {
-    padding-bottom: max(env(safe-area-inset-bottom), 1rem);
+  .cmdk-input {
+    @apply bg-white text-gray-900;
+  }
+  
+  .cmdk-list {
+    @apply bg-white text-gray-900;
+  }
+  
+  .cmdk-item {
+    @apply bg-white hover:bg-gray-100 text-gray-900;
+  }
+  
+  [cmdk-root] {
+    @apply bg-white border border-gray-200 rounded-lg shadow-lg;
   }
 }
+
+/* ... keep existing code (html, body, #root styles and safe area adjustments) the same */

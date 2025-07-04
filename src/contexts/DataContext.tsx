@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './AuthContext';
@@ -44,6 +43,7 @@ interface DataContextType {
   addTransaction: (transaction: Omit<Transaction, 'id' | 'date' | 'userId'>) => Promise<void>;
   addCustomer: (customer: Omit<Customer, 'id' | 'totalOutstanding' | 'transactions' | 'userId'>) => Promise<void>;
   addInventoryItem: (item: Omit<InventoryItem, 'id' | 'userId'>) => Promise<void>;
+  deleteInventoryItem: (itemId: string) => Promise<void>;
   updateStock: (itemId: string, quantity: number) => Promise<void>;
   getTodaysSummary: () => { sales: number; expenses: number; net: number };
   getCustomerById: (id: string) => Customer | undefined;
@@ -354,6 +354,29 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const deleteInventoryItem = async (itemId: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('inventory_items')
+        .delete()
+        .eq('id', itemId)
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Error deleting inventory item:', error);
+        throw error;
+      }
+
+      // Update local state
+      setInventory(prev => prev.filter(item => item.id !== itemId));
+    } catch (error) {
+      console.error('Error deleting inventory item:', error);
+      throw error;
+    }
+  };
+
   const updateStock = async (itemId: string, quantity: number) => {
     if (!user) return;
 
@@ -424,6 +447,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       addTransaction,
       addCustomer,
       addInventoryItem,
+      deleteInventoryItem,
       updateStock,
       getTodaysSummary,
       getCustomerById,

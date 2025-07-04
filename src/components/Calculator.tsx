@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -446,28 +445,27 @@ const Calculator: React.FC = () => {
           <Button variant="outline" onClick={() => inputNumber('1')} className="calculator-button calculator-number">1</Button>
           <Button variant="outline" onClick={() => inputNumber('2')} className="calculator-button calculator-number">2</Button>
           <Button variant="outline" onClick={() => inputNumber('3')} className="calculator-button calculator-number">3</Button>
+          <Button variant="outline" onClick={() => inputNumber('0')} className="calculator-button calculator-number">0</Button>
+
+          {/* Row 5 */}
+          <Button variant="outline" onClick={inputDecimal} className="calculator-button calculator-number">.</Button>
           <Button 
             variant="default" 
             onClick={isTransactionMode ? handleSaveTransaction : handleEquals}
-            className="calculator-button row-span-2 calculator-equals font-semibold"
+            className="calculator-button col-span-3 calculator-equals font-semibold"
           >
-            {isTransactionMode ? t('save') : <Equal className="w-5 h-5" />}
+            {isTransactionMode ? (
+              <>
+                <Receipt className="w-5 h-5 mr-2" />
+                {t('save')}
+              </>
+            ) : (
+              <>
+                <Equal className="w-5 h-5 mr-2" />
+                =
+              </>
+            )}
           </Button>
-
-          {/* Row 5 */}
-          <Button variant="outline" onClick={() => inputNumber('0')} className="calculator-button col-span-2 calculator-number">0</Button>
-          <Button variant="outline" onClick={inputDecimal} className="calculator-button calculator-number">.</Button>
-          
-          {/* Additional = button for non-transaction mode */}
-          {!isTransactionMode && (
-            <Button 
-              variant="default" 
-              onClick={handleEquals}
-              className="calculator-button calculator-equals font-semibold"
-            >
-              <Equal className="w-5 h-5" />
-            </Button>
-          )}
         </div>
 
         {/* Print Button for Transaction Mode */}
