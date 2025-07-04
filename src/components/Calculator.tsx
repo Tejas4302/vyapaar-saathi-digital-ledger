@@ -38,7 +38,6 @@ const Calculator: React.FC = () => {
   const [paymentMode, setPaymentMode] = useState<'cash' | 'online' | 'udhaar'>('cash');
   const [selectedCustomer, setSelectedCustomer] = useState<string>('');
   const [selectedItem, setSelectedItem] = useState<string>('');
-  const [note, setNote] = useState('');
   
   // Dropdown states
   const [customerOpen, setCustomerOpen] = useState(false);
@@ -148,14 +147,13 @@ const Calculator: React.FC = () => {
         paymentMode,
         customerId: selectedCustomer || undefined,
         itemId: selectedItem || undefined,
-        note: note || undefined
+        note: undefined
       });
 
       toast.success(t('transactionSaved'));
       
       // Reset form
       clear();
-      setNote('');
       setSelectedCustomer('');
       setSelectedItem('');
     } catch (error) {
@@ -181,7 +179,6 @@ const Calculator: React.FC = () => {
       paymentMode,
       customer: customer?.name || 'Walk-in Customer',
       item: item?.name || '',
-      note,
       date: new Date().toLocaleString(),
       transactionId: 'TXN' + Date.now()
     };
@@ -271,138 +268,129 @@ const Calculator: React.FC = () => {
               />
             </div>
 
-            {/* Customer Selection with Search */}
-            <div>
-              <label className="label-text block">{t('selectCustomer')}</label>
-              <Popover open={customerOpen} onOpenChange={setCustomerOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={customerOpen}
-                    className="mobile-input justify-between border-gray-300 hover:border-blue-400"
-                  >
-                    <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-gray-400" />
-                      <span className="text-gray-600 text-proper">
-                        {selectedCustomer
-                          ? customers.find(c => c.id === selectedCustomer)?.name
-                          : t('selectCustomer')}
-                      </span>
-                    </div>
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-full p-0" align="start">
-                  <Command>
-                    <CommandInput 
-                      placeholder={`Search ${t('customers').toLowerCase()}...`}
-                      value={customerSearch}
-                      onValueChange={setCustomerSearch}
-                    />
-                    <CommandList>
-                      <CommandEmpty>No customer found.</CommandEmpty>
-                      <CommandGroup>
-                        {filteredCustomers.map((customer) => (
-                          <CommandItem
-                            key={customer.id}
-                            value={customer.id}
-                            onSelect={() => {
-                              setSelectedCustomer(customer.id);
-                              setCustomerOpen(false);
-                              setCustomerSearch('');
-                            }}
-                          >
-                            <Check
-                              className={`mr-2 h-4 w-4 ${
-                                selectedCustomer === customer.id ? "opacity-100" : "opacity-0"
-                              }`}
-                            />
-                            <div>
-                              <p className="font-medium text-proper">{customer.name}</p>
-                              {customer.phone && (
-                                <p className="text-sm text-gray-500">{customer.phone}</p>
-                              )}
-                            </div>
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-            </div>
+            {/* Customer and Item Selection on same row */}
+            <div className="grid grid-cols-2 gap-3">
+              {/* Customer Selection */}
+              <div>
+                <label className="label-text block">{t('selectCustomer')}</label>
+                <Popover open={customerOpen} onOpenChange={setCustomerOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={customerOpen}
+                      className="mobile-input justify-between border-gray-300 hover:border-blue-400 h-12"
+                    >
+                      <div className="flex items-center gap-2">
+                        <User className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-600 text-proper text-xs truncate">
+                          {selectedCustomer
+                            ? customers.find(c => c.id === selectedCustomer)?.name
+                            : t('selectCustomer')}
+                        </span>
+                      </div>
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <Command>
+                      <CommandInput 
+                        placeholder={`Search ${t('customers').toLowerCase()}...`}
+                        value={customerSearch}
+                        onValueChange={setCustomerSearch}
+                      />
+                      <CommandList>
+                        <CommandEmpty>No customer found.</CommandEmpty>
+                        <CommandGroup>
+                          {filteredCustomers.map((customer) => (
+                            <CommandItem
+                              key={customer.id}
+                              value={customer.id}
+                              onSelect={() => {
+                                setSelectedCustomer(customer.id);
+                                setCustomerOpen(false);
+                                setCustomerSearch('');
+                              }}
+                            >
+                              <Check
+                                className={`mr-2 h-4 w-4 ${
+                                  selectedCustomer === customer.id ? "opacity-100" : "opacity-0"
+                                }`}
+                              />
+                              <div>
+                                <p className="font-medium text-proper">{customer.name}</p>
+                                {customer.phone && (
+                                  <p className="text-sm text-gray-500">{customer.phone}</p>
+                                )}
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
 
-            {/* Item Selection with Search */}
-            <div>
-              <label className="label-text block">{t('selectItem')}</label>
-              <Popover open={itemOpen} onOpenChange={setItemOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={itemOpen}
-                    className="mobile-input justify-between border-gray-300 hover:border-blue-400"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Package className="w-4 h-4 text-gray-400" />
-                      <span className="text-gray-600 text-proper">
-                        {selectedItem
-                          ? inventory.find(i => i.id === selectedItem)?.name
-                          : t('selectItem')}
-                      </span>
-                    </div>
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-full p-0" align="start">
-                  <Command>
-                    <CommandInput 
-                      placeholder={`Search ${t('inventory').toLowerCase()}...`}
-                      value={itemSearch}
-                      onValueChange={setItemSearch}
-                    />
-                    <CommandList>
-                      <CommandEmpty>No item found.</CommandEmpty>
-                      <CommandGroup>
-                        {filteredItems.map((item) => (
-                          <CommandItem
-                            key={item.id}
-                            value={item.id}
-                            onSelect={() => {
-                              setSelectedItem(item.id);
-                              setItemOpen(false);
-                              setItemSearch('');
-                            }}
-                          >
-                            <Check
-                              className={`mr-2 h-4 w-4 ${
-                                selectedItem === item.id ? "opacity-100" : "opacity-0"
-                              }`}
-                            />
-                            <div>
-                              <p className="font-medium text-proper">{item.name}</p>
-                              <p className="text-sm text-gray-500 text-proper">{item.category}</p>
-                            </div>
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            {/* Notes */}
-            <div>
-              <label className="label-text block">{t('addNote')}</label>
-              <Textarea
-                placeholder={t('addNote')}
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                rows={3}
-                className="border-gray-300 focus:border-blue-400 focus:ring-blue-400 rounded-xl"
-              />
+              {/* Item Selection */}
+              <div>
+                <label className="label-text block">{t('selectItem')}</label>
+                <Popover open={itemOpen} onOpenChange={setItemOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={itemOpen}
+                      className="mobile-input justify-between border-gray-300 hover:border-blue-400 h-12"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Package className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-600 text-proper text-xs truncate">
+                          {selectedItem
+                            ? inventory.find(i => i.id === selectedItem)?.name
+                            : t('selectItem')}
+                        </span>
+                      </div>
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <Command>
+                      <CommandInput 
+                        placeholder={`Search ${t('inventory').toLowerCase()}...`}
+                        value={itemSearch}
+                        onValueChange={setItemSearch}
+                      />
+                      <CommandList>
+                        <CommandEmpty>No item found.</CommandEmpty>
+                        <CommandGroup>
+                          {filteredItems.map((item) => (
+                            <CommandItem
+                              key={item.id}
+                              value={item.id}
+                              onSelect={() => {
+                                setSelectedItem(item.id);
+                                setItemOpen(false);
+                                setItemSearch('');
+                              }}
+                            >
+                              <Check
+                                className={`mr-2 h-4 w-4 ${
+                                  selectedItem === item.id ? "opacity-100" : "opacity-0"
+                                }`}
+                              />
+                              <div>
+                                <p className="font-medium text-proper">{item.name}</p>
+                                <p className="text-sm text-gray-500 text-proper">{item.category}</p>
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
             </div>
           </div>
         )}
@@ -457,7 +445,7 @@ const Calculator: React.FC = () => {
             {isTransactionMode ? (
               <>
                 <Receipt className="w-5 h-5 mr-2" />
-                {t('save')}
+                =
               </>
             ) : (
               <>
