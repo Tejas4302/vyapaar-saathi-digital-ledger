@@ -8,6 +8,8 @@ import { toast } from 'sonner';
 import { User, Edit2, X, Check, Settings, Trash2, Camera } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import ProductTour from '@/components/ProductTour';
+import ImageCropper from '@/components/ImageCropper';
+import PhotoViewer from '@/components/PhotoViewer';
 
 interface ProfileScreenProps {
   onStartTour?: () => void;
@@ -19,6 +21,9 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ onStartTour }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [showTour, setShowTour] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showImageCropper, setShowImageCropper] = useState(false);
+  const [showPhotoViewer, setShowPhotoViewer] = useState(false);
+  const [tempImageUrl, setTempImageUrl] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     name: profile?.name || '',
@@ -40,17 +45,23 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ onStartTour }) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = async (e) => {
+      reader.onload = (e) => {
         const imageDataUrl = e.target?.result as string;
-        try {
-          await updateProfile({ profilePhoto: imageDataUrl });
-          toast.success('Profile picture updated successfully');
-        } catch (error) {
-          console.error('Error updating profile picture:', error);
-          toast.error('Failed to update profile picture');
-        }
+        setTempImageUrl(imageDataUrl);
+        setShowImageCropper(true);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCropComplete = async (croppedImageUrl: string) => {
+    try {
+      await updateProfile({ profilePhoto: croppedImageUrl });
+      toast.success('Profile picture updated successfully');
+      setTempImageUrl('');
+    } catch (error) {
+      console.error('Error updating profile picture:', error);
+      toast.error('Failed to update profile picture');
     }
   };
 
@@ -62,6 +73,10 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ onStartTour }) => {
       console.error('Error removing profile picture:', error);
       toast.error('Failed to remove profile picture');
     }
+  };
+
+  const handleAvatarClick = () => {
+    setShowPhotoViewer(true);
   };
 
   const getInitials = (name?: string) => {
@@ -121,7 +136,10 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ onStartTour }) => {
       {/* Profile Header with Photo */}
       <Card className="mobile-card text-center gradient-primary text-white">
         <div className="relative w-20 h-20 mx-auto mb-4">
-          <Avatar className="w-20 h-20">
+          <Avatar 
+            className="w-20 h-20 cursor-pointer hover:opacity-80 transition-opacity" 
+            onClick={handleAvatarClick}
+          >
             {profile?.profilePhoto ? (
               <AvatarImage src={profile.profilePhoto} alt={profile?.name || 'User'} />
             ) : null}
@@ -285,6 +303,25 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ onStartTour }) => {
         accept="image/*"
         onChange={handleImageUpload}
         className="hidden"
+      />
+
+      {/* Image Cropper */}
+      <ImageCropper
+        isOpen={showImageCropper}
+        onClose={() => {
+          setShowImageCropper(false);
+          setTempImageUrl('');
+        }}
+        imageUrl={tempImageUrl}
+        onCropComplete={handleCropComplete}
+      />
+
+      {/* Photo Viewer */}
+      <PhotoViewer
+        isOpen={showPhotoViewer}
+        onClose={() => setShowPhotoViewer(false)}
+        imageUrl={profile?.profilePhoto}
+        fallbackText={getInitials(profile?.name)}
       />
 
       {/* Product Tour */}
