@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
-import { User, Edit2, X, Check, Settings, Trash2 } from 'lucide-react';
+import { User, Edit2, X, Check, Settings, Trash2, Camera } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import ProductTour from '@/components/ProductTour';
 
 interface ProfileScreenProps {
@@ -18,6 +19,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ onStartTour }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [showTour, setShowTour] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     name: profile?.name || '',
     phone: profile?.phone || '',
@@ -33,6 +35,39 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ onStartTour }) => {
       });
     }
   }, [profile]);
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const imageDataUrl = e.target?.result as string;
+        try {
+          await updateProfile({ profilePhoto: imageDataUrl });
+          toast.success('Profile picture updated successfully');
+        } catch (error) {
+          console.error('Error updating profile picture:', error);
+          toast.error('Failed to update profile picture');
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemovePhoto = async () => {
+    try {
+      await updateProfile({ profilePhoto: undefined });
+      toast.success('Profile picture removed successfully');
+    } catch (error) {
+      console.error('Error removing profile picture:', error);
+      toast.error('Failed to remove profile picture');
+    }
+  };
+
+  const getInitials = (name?: string) => {
+    if (!name) return 'U';
+    return name.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 2);
+  };
 
   const handleSave = async () => {
     try {
@@ -83,11 +118,43 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ onStartTour }) => {
 
   return (
     <div className="mobile-container bg-gradient-to-br from-slate-50 to-blue-50">
-      {/* Profile Header */}
+      {/* Profile Header with Photo */}
       <Card className="mobile-card text-center gradient-primary text-white">
-        <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
-          <User className="w-8 h-8" />
+        <div className="relative w-20 h-20 mx-auto mb-4">
+          <Avatar className="w-20 h-20">
+            {profile?.profilePhoto ? (
+              <AvatarImage src={profile.profilePhoto} alt={profile?.name || 'User'} />
+            ) : null}
+            <AvatarFallback className="text-2xl font-bold bg-white/20 text-white">
+              {getInitials(profile?.name)}
+            </AvatarFallback>
+          </Avatar>
         </div>
+        
+        {/* Photo Management Buttons */}
+        <div className="flex justify-center gap-2 mb-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => fileInputRef.current?.click()}
+            className="bg-white/20 border-white/30 text-white hover:bg-white/30"
+          >
+            <Camera className="w-4 h-4 mr-2" />
+            {profile?.profilePhoto ? 'Change Photo' : 'Add Photo'}
+          </Button>
+          {profile?.profilePhoto && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRemovePhoto}
+              className="bg-red-500/20 border-red-300/30 text-white hover:bg-red-500/30"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Remove
+            </Button>
+          )}
+        </div>
+
         <h2 className="text-xl font-bold text-proper">{profile?.name || t('user')}</h2>
         <p className="text-sm opacity-80 text-proper">{profile?.storeName || t('noStoreNameSet')}</p>
       </Card>
@@ -210,6 +277,15 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ onStartTour }) => {
           )}
         </div>
       </Card>
+
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleImageUpload}
+        className="hidden"
+      />
 
       {/* Product Tour */}
       {showTour && <ProductTour isOpen={showTour} onClose={() => setShowTour(false)} />}
