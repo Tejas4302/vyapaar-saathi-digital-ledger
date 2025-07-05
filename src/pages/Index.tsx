@@ -77,19 +77,19 @@ const Index = () => {
     <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
       {/* Mobile Header */}
       <div className="mobile-header safe-area-top">
-        <div className="flex items-center justify-between max-w-md mx-auto">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between w-full max-w-full px-4">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
             <img 
               src="/lovable-uploads/592c8570-e687-4d0b-b5c3-abd42466406b.png" 
               alt="VyapaarSetu Logo" 
-              className="w-8 h-8 rounded-full"
+              className="w-8 h-8 rounded-full flex-shrink-0"
             />
-            <div>
-              <h1 className="title-text text-lg">{t('appName')}</h1>
-              <p className="subtitle-text text-xs">{t('welcome')}, {profile?.name || t('user')}!</p>
+            <div className="min-w-0 flex-1">
+              <h1 className="title-text text-lg truncate">{t('appName')}</h1>
+              <p className="subtitle-text text-xs truncate">{t('welcome')}, {profile?.name || t('user')}!</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <LanguageDropdown />
             <ProfileButton onProfileClick={handleProfileClick} />
           </div>
