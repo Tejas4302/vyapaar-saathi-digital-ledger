@@ -100,21 +100,21 @@ const AuthScreen: React.FC = () => {
             resetForm();
           }} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">{t('login')}</TabsTrigger>
-              <TabsTrigger value="signup">{t('signUp')}</TabsTrigger>
+              <TabsTrigger value="login">Log In</TabsTrigger>
+              <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
 
             <TabsContent value="login" className="space-y-4">
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">
-                    {t('phone')}
+                    Phone Number
                   </label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
                       type="tel"
-                      placeholder="Enter Phone Number"
+                      placeholder="Enter phone number"
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value)}
                       className="pl-10"
@@ -122,15 +122,15 @@ const AuthScreen: React.FC = () => {
                       required
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">{t('mobileNumber10Digits')}</p>
+                  <p className="text-xs text-gray-500 mt-1">Enter your 10 digit mobile number</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">{t('password')}</label>
+                  <label className="block text-sm font-medium mb-1">Password</label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
                       type={showPassword ? "text" : "password"}
-                      placeholder={t('enterPassword')}
+                      placeholder="Enter password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="pl-10 pr-10"
@@ -154,7 +154,7 @@ const AuthScreen: React.FC = () => {
                   className="mobile-button w-full bg-primary hover:bg-blue-800"
                   disabled={isLoading || !isValidPhone || !password}
                 >
-                  {isLoading ? t('loggingIn') : t('login')}
+                  {isLoading ? 'Logging In...' : 'Log In'}
                 </Button>
               </div>
             </TabsContent>
@@ -162,12 +162,12 @@ const AuthScreen: React.FC = () => {
             <TabsContent value="signup" className="space-y-4">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">{t('name')}</label>
+                  <label className="block text-sm font-medium mb-1">Full Name</label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
                       type="text"
-                      placeholder={t('enterName')}
+                      placeholder="Enter your full name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       className="pl-10"
@@ -176,12 +176,12 @@ const AuthScreen: React.FC = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">{t('storeName')} ({t('optional')})</label>
+                  <label className="block text-sm font-medium mb-1">Store Name (Optional)</label>
                   <div className="relative">
                     <Store className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
                       type="text"
-                      placeholder={t('enterStoreName')}
+                      placeholder="Enter your store name"
                       value={storeName}
                       onChange={(e) => setStoreName(e.target.value)}
                       className="pl-10"
@@ -190,13 +190,13 @@ const AuthScreen: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">
-                    {t('phone')}
+                    Phone Number
                   </label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
                       type="tel"
-                      placeholder="Enter Phone Number"
+                      placeholder="Enter phone number"
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value)}
                       className="pl-10"
@@ -204,15 +204,15 @@ const AuthScreen: React.FC = () => {
                       required
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">{t('mobileNumber10Digits')}</p>
+                  <p className="text-xs text-gray-500 mt-1">Enter your 10 digit mobile number</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">{t('password')}</label>
+                  <label className="block text-sm font-medium mb-1">Password</label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <Input
                       type={showPassword ? "text" : "password"}
-                      placeholder={t('createPassword')}
+                      placeholder="Create a password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="pl-10 pr-10"
@@ -230,14 +230,14 @@ const AuthScreen: React.FC = () => {
                       )}
                     </button>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">{t('minimum6Characters')}</p>
+                  <p className="text-xs text-gray-500 mt-1">Minimum 6 characters required</p>
                 </div>
                 <Button
                   onClick={handleSignUp}
                   className="mobile-button w-full bg-primary hover:bg-blue-800"
                   disabled={isLoading || !name.trim() || !isValidPhone || password.length < 6}
                 >
-                  {isLoading ? t('creatingAccount') : t('signUp')}
+                  {isLoading ? 'Creating Account...' : 'Sign Up'}
                 </Button>
               </div>
             </TabsContent>

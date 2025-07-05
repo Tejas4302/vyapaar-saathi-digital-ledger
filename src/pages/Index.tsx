@@ -13,11 +13,10 @@ import ProfileScreen from '@/components/ProfileScreen';
 import BottomNav from '@/components/BottomNav';
 import LanguageDropdown from '@/components/LanguageDropdown';
 import ProductTour from '@/components/ProductTour';
-import { Button } from '@/components/ui/button';
-import { LogOut } from 'lucide-react';
+import ProfileButton from '@/components/ProfileButton';
 
 const Index = () => {
-  const { user, profile, logout } = useAuth();
+  const { user, profile } = useAuth();
   const { t } = useLanguage();
   const [showWelcome, setShowWelcome] = useState(!user);
   const [activeTab, setActiveTab] = useState('calculator');
@@ -38,6 +37,10 @@ const Index = () => {
     if (user) {
       localStorage.setItem(`tour_seen_${user.id}`, 'true');
     }
+  };
+
+  const handleProfileClick = () => {
+    setActiveTab('profile');
   };
 
   // Show welcome screen for new users
@@ -88,14 +91,7 @@ const Index = () => {
           </div>
           <div className="flex items-center gap-2">
             <LanguageDropdown />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={logout}
-              className="p-2"
-            >
-              <LogOut className="w-4 h-4" />
-            </Button>
+            <ProfileButton onProfileClick={handleProfileClick} />
           </div>
         </div>
       </div>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -16,12 +17,10 @@ import {
   Minus, 
   X, 
   Divide, 
-  Equal,
   Delete,
   User,
   Package,
   Printer,
-  Receipt,
   Check,
   ChevronsUpDown
 } from 'lucide-react';
@@ -31,7 +30,6 @@ const Calculator: React.FC = () => {
   const [operation, setOperation] = useState<string | null>(null);
   const [waitingForNewValue, setWaitingForNewValue] = useState(false);
   const [firstValue, setFirstValue] = useState<string | null>(null);
-  const [isTransactionMode, setIsTransactionMode] = useState(true); // Default to transaction mode
   
   // Transaction form states
   const [transactionType, setTransactionType] = useState<'cash_in' | 'cash_out'>('cash_in');
@@ -114,20 +112,6 @@ const Calculator: React.FC = () => {
     }
   };
 
-  const handleEquals = () => {
-    const inputValue = parseFloat(display);
-
-    if (firstValue !== null && operation) {
-      const currentValue = parseFloat(firstValue);
-      const newValue = calculate(currentValue, inputValue, operation);
-      
-      setDisplay(String(newValue));
-      setFirstValue(null);
-      setOperation(null);
-      setWaitingForNewValue(true);
-    }
-  };
-
   const handleSaveTransaction = async () => {
     const amount = parseFloat(display);
     
@@ -189,13 +173,6 @@ const Calculator: React.FC = () => {
     console.log('Print Data:', printData);
   };
 
-  const toggleTransactionMode = () => {
-    setIsTransactionMode(!isTransactionMode);
-    if (!isTransactionMode) {
-      clear();
-    }
-  };
-
   return (
     <div className="mobile-container bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header with modern design */}
@@ -205,21 +182,10 @@ const Calculator: React.FC = () => {
             <CalculatorIcon className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="title-text">{t('calculator')}</h1>
+            <h1 className="title-text">{t('transaction')}</h1>
             <p className="subtitle-text">Smart Business Calculator</p>
           </div>
         </div>
-        <Button
-          variant={isTransactionMode ? "default" : "outline"}
-          size="sm"
-          onClick={toggleTransactionMode}
-          className={`${isTransactionMode 
-            ? 'gradient-primary hover:from-blue-700 hover:to-purple-700' 
-            : 'border-gray-300 hover:bg-gray-50'
-          } transition-all duration-200 text-proper`}
-        >
-          {isTransactionMode ? t('calculator') : t('transaction')}
-        </Button>
       </div>
 
       <Card className="mobile-card bg-white/80 backdrop-blur-sm shadow-xl">
@@ -230,170 +196,168 @@ const Calculator: React.FC = () => {
           </div>
         </div>
 
-        {isTransactionMode && (
-          <div className="space-y-6 mb-6">
-            {/* Transaction Type Buttons */}
-            <div className="grid grid-cols-2 gap-3">
-              <Button
-                variant={transactionType === 'cash_in' ? 'default' : 'outline'}
-                onClick={() => setTransactionType('cash_in')}
-                className={`mobile-button ${transactionType === 'cash_in' 
-                  ? 'gradient-success hover:from-green-600 hover:to-emerald-600' 
-                  : 'border-gray-300 hover:bg-green-50'
-                } text-proper`}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                {t('cashIn')}
-              </Button>
-              <Button
-                variant={transactionType === 'cash_out' ? 'default' : 'outline'}
-                onClick={() => setTransactionType('cash_out')}
-                className={`mobile-button ${transactionType === 'cash_out' 
-                  ? 'gradient-danger hover:from-red-600 hover:to-pink-600' 
-                  : 'border-gray-300 hover:bg-red-50'
-                } text-proper`}
-              >
-                <Minus className="w-4 h-4 mr-2" />
-                {t('cashOut')}
-              </Button>
-            </div>
+        <div className="space-y-6 mb-6">
+          {/* Transaction Type Buttons */}
+          <div className="grid grid-cols-2 gap-3">
+            <Button
+              variant={transactionType === 'cash_in' ? 'default' : 'outline'}
+              onClick={() => setTransactionType('cash_in')}
+              className={`mobile-button ${transactionType === 'cash_in' 
+                ? 'gradient-success hover:from-green-600 hover:to-emerald-600' 
+                : 'border-gray-300 hover:bg-green-50'
+              } text-proper`}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              {t('cashIn')}
+            </Button>
+            <Button
+              variant={transactionType === 'cash_out' ? 'default' : 'outline'}
+              onClick={() => setTransactionType('cash_out')}
+              className={`mobile-button ${transactionType === 'cash_out' 
+                ? 'gradient-danger hover:from-red-600 hover:to-pink-600' 
+                : 'border-gray-300 hover:bg-red-50'
+              } text-proper`}
+            >
+              <Minus className="w-4 h-4 mr-2" />
+              {t('cashOut')}
+            </Button>
+          </div>
 
-            {/* Payment Mode */}
+          {/* Payment Mode */}
+          <div>
+            <label className="label-text block">{t('paymentMode')}</label>
+            <PaymentModeSelector
+              value={paymentMode}
+              onChange={setPaymentMode}
+              className="w-full"
+            />
+          </div>
+
+          {/* Customer and Item Selection on same row */}
+          <div className="grid grid-cols-2 gap-3">
+            {/* Customer Selection */}
             <div>
-              <label className="label-text block">{t('paymentMode')}</label>
-              <PaymentModeSelector
-                value={paymentMode}
-                onChange={setPaymentMode}
-                className="w-full"
-              />
+              <label className="label-text block">{t('selectCustomer')}</label>
+              <Popover open={customerOpen} onOpenChange={setCustomerOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={customerOpen}
+                    className="mobile-input justify-between border-gray-300 hover:border-blue-400 h-12"
+                  >
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4 text-gray-400" />
+                      <span className="text-gray-600 text-proper text-xs truncate">
+                        {selectedCustomer
+                          ? customers.find(c => c.id === selectedCustomer)?.name
+                          : t('selectCustomer')}
+                      </span>
+                    </div>
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0" align="start">
+                  <Command>
+                    <CommandInput 
+                      placeholder={`Search ${t('customers').toLowerCase()}...`}
+                      value={customerSearch}
+                      onValueChange={setCustomerSearch}
+                    />
+                    <CommandList>
+                      <CommandEmpty>No customer found.</CommandEmpty>
+                      <CommandGroup>
+                        {filteredCustomers.map((customer) => (
+                          <CommandItem
+                            key={customer.id}
+                            value={customer.id}
+                            onSelect={() => {
+                              setSelectedCustomer(customer.id);
+                              setCustomerOpen(false);
+                              setCustomerSearch('');
+                            }}
+                          >
+                            <Check
+                              className={`mr-2 h-4 w-4 ${
+                                selectedCustomer === customer.id ? "opacity-100" : "opacity-0"
+                              }`}
+                            />
+                            <div>
+                              <p className="font-medium text-proper">{customer.name}</p>
+                              {customer.phone && (
+                                <p className="text-sm text-gray-500">{customer.phone}</p>
+                              )}
+                            </div>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
 
-            {/* Customer and Item Selection on same row */}
-            <div className="grid grid-cols-2 gap-3">
-              {/* Customer Selection */}
-              <div>
-                <label className="label-text block">{t('selectCustomer')}</label>
-                <Popover open={customerOpen} onOpenChange={setCustomerOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={customerOpen}
-                      className="mobile-input justify-between border-gray-300 hover:border-blue-400 h-12"
-                    >
-                      <div className="flex items-center gap-2">
-                        <User className="w-4 h-4 text-gray-400" />
-                        <span className="text-gray-600 text-proper text-xs truncate">
-                          {selectedCustomer
-                            ? customers.find(c => c.id === selectedCustomer)?.name
-                            : t('selectCustomer')}
-                        </span>
-                      </div>
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-full p-0" align="start">
-                    <Command>
-                      <CommandInput 
-                        placeholder={`Search ${t('customers').toLowerCase()}...`}
-                        value={customerSearch}
-                        onValueChange={setCustomerSearch}
-                      />
-                      <CommandList>
-                        <CommandEmpty>No customer found.</CommandEmpty>
-                        <CommandGroup>
-                          {filteredCustomers.map((customer) => (
-                            <CommandItem
-                              key={customer.id}
-                              value={customer.id}
-                              onSelect={() => {
-                                setSelectedCustomer(customer.id);
-                                setCustomerOpen(false);
-                                setCustomerSearch('');
-                              }}
-                            >
-                              <Check
-                                className={`mr-2 h-4 w-4 ${
-                                  selectedCustomer === customer.id ? "opacity-100" : "opacity-0"
-                                }`}
-                              />
-                              <div>
-                                <p className="font-medium text-proper">{customer.name}</p>
-                                {customer.phone && (
-                                  <p className="text-sm text-gray-500">{customer.phone}</p>
-                                )}
-                              </div>
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              {/* Item Selection */}
-              <div>
-                <label className="label-text block">{t('selectItem')}</label>
-                <Popover open={itemOpen} onOpenChange={setItemOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={itemOpen}
-                      className="mobile-input justify-between border-gray-300 hover:border-blue-400 h-12"
-                    >
-                      <div className="flex items-center gap-2">
-                        <Package className="w-4 h-4 text-gray-400" />
-                        <span className="text-gray-600 text-proper text-xs truncate">
-                          {selectedItem
-                            ? inventory.find(i => i.id === selectedItem)?.name
-                            : t('selectItem')}
-                        </span>
-                      </div>
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-full p-0" align="start">
-                    <Command>
-                      <CommandInput 
-                        placeholder={`Search ${t('inventory').toLowerCase()}...`}
-                        value={itemSearch}
-                        onValueChange={setItemSearch}
-                      />
-                      <CommandList>
-                        <CommandEmpty>No item found.</CommandEmpty>
-                        <CommandGroup>
-                          {filteredItems.map((item) => (
-                            <CommandItem
-                              key={item.id}
-                              value={item.id}
-                              onSelect={() => {
-                                setSelectedItem(item.id);
-                                setItemOpen(false);
-                                setItemSearch('');
-                              }}
-                            >
-                              <Check
-                                className={`mr-2 h-4 w-4 ${
-                                  selectedItem === item.id ? "opacity-100" : "opacity-0"
-                                }`}
-                              />
-                              <div>
-                                <p className="font-medium text-proper">{item.name}</p>
-                                <p className="text-sm text-gray-500 text-proper">{item.category}</p>
-                              </div>
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              </div>
+            {/* Item Selection */}
+            <div>
+              <label className="label-text block">{t('selectItem')}</label>
+              <Popover open={itemOpen} onOpenChange={setItemOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={itemOpen}
+                    className="mobile-input justify-between border-gray-300 hover:border-blue-400 h-12"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Package className="w-4 h-4 text-gray-400" />
+                      <span className="text-gray-600 text-proper text-xs truncate">
+                        {selectedItem
+                          ? inventory.find(i => i.id === selectedItem)?.name
+                          : t('selectItem')}
+                      </span>
+                    </div>
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0" align="start">
+                  <Command>
+                    <CommandInput 
+                      placeholder={`Search ${t('inventory').toLowerCase()}...`}
+                      value={itemSearch}
+                      onValueChange={setItemSearch}
+                    />
+                    <CommandList>
+                      <CommandEmpty>No item found.</CommandEmpty>
+                      <CommandGroup>
+                        {filteredItems.map((item) => (
+                          <CommandItem
+                            key={item.id}
+                            value={item.id}
+                            onSelect={() => {
+                              setSelectedItem(item.id);
+                              setItemOpen(false);
+                              setItemSearch('');
+                            }}
+                          >
+                            <Check
+                              className={`mr-2 h-4 w-4 ${
+                                selectedItem === item.id ? "opacity-100" : "opacity-0"
+                              }`}
+                            />
+                            <div>
+                              <p className="font-medium text-proper">{item.name}</p>
+                              <p className="text-sm text-gray-500 text-proper">{item.category}</p>
+                            </div>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
-        )}
+        </div>
 
         {/* Calculator Buttons with improved design */}
         <div className="grid grid-cols-4 gap-3">
@@ -439,32 +403,23 @@ const Calculator: React.FC = () => {
           <Button variant="outline" onClick={inputDecimal} className="calculator-button calculator-number">.</Button>
           <Button 
             variant="default" 
-            onClick={isTransactionMode ? handleSaveTransaction : handleEquals}
+            onClick={handleSaveTransaction}
             className="calculator-button col-span-3 calculator-equals font-semibold"
           >
-            {isTransactionMode ? (
-              <>
-                <Receipt className="w-5 h-5 mr-2" />
-                =
-              </>
-            ) : (
-              "="
-            )}
+            =
           </Button>
         </div>
 
-        {/* Print Button for Transaction Mode */}
-        {isTransactionMode && (
-          <div className="mt-4">
-            <Button
-              onClick={handlePrintBill}
-              className="mobile-button gradient-success hover:from-green-700 hover:to-emerald-700 font-semibold text-proper"
-            >
-              <Printer className="w-5 h-5 mr-2" />
-              {t('print')}
-            </Button>
-          </div>
-        )}
+        {/* Print Button */}
+        <div className="mt-4">
+          <Button
+            onClick={handlePrintBill}
+            className="mobile-button gradient-success hover:from-green-700 hover:to-emerald-700 font-semibold text-proper"
+          >
+            <Printer className="w-5 h-5 mr-2" />
+            {t('print')}
+          </Button>
+        </div>
       </Card>
     </div>
   );
