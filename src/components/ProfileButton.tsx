@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -7,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { User, LogOut } from 'lucide-react';
 import PhotoViewer from '@/components/PhotoViewer';
+import { toast } from 'sonner';
 
 interface ProfileButtonProps {
   onProfileClick: () => void;
@@ -24,8 +24,14 @@ const ProfileButton: React.FC<ProfileButtonProps> = ({ onProfileClick }) => {
   };
 
   const handleLogout = async () => {
-    await logout();
-    setOpen(false);
+    try {
+      setOpen(false);
+      await logout();
+      toast.success('Logged out successfully');
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast.error('Error logging out');
+    }
   };
 
   const handleAvatarClick = (e: React.MouseEvent) => {

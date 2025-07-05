@@ -16,7 +16,7 @@ interface AuthContextType {
   session: Session | null;
   login: (phoneNumber: string, password: string) => Promise<{ success: boolean; message: string }>;
   signUp: (phoneNumber: string, password: string, name: string, storeName?: string) => Promise<{ success: boolean; message: string }>;
-  logout: () => void;
+  logout: () => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
   deleteAccount: () => Promise<void>;
   isLoading: boolean;
@@ -166,7 +166,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
-    await supabase.auth.signOut();
+    try {
+      console.log('Attempting logout...');
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Logout error:', error);
+        throw error;
+      }
+      console.log('Logout successful');
+      // Clear local state immediately
+      setUser(null);
+      setProfile(null);
+      setSession(null);
+      localStorage.removeItem('current_user_id');
+    } catch (error) {
+      console.error('Error during logout:', error);
+      // Force clear local state even if logout fails
+      setUser(null);
+      setProfile(null);
+      setSession(null);
+      localStorage.removeItem('current_user_id');
+    }
   };
 
   const deleteAccount = async () => {

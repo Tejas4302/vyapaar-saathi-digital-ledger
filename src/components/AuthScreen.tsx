@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -91,7 +90,7 @@ const AuthScreen: React.FC = () => {
             />
           </div>
           <h1 className="text-2xl font-bold text-primary mb-2">{t('welcomeTo')}</h1>
-          <p className="text-gray-600">{t('startManagingDigitally')}</p>
+          <p className="text-gray-600 mt-2">{t('startManagingDigitally')}</p>
         </div>
 
         <Card className="p-6">

@@ -109,8 +109,13 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ onStartTour }) => {
   };
 
   const handleLogout = async () => {
-    await logout();
-    toast.success(t('logoutSuccessful'));
+    try {
+      await logout();
+      toast.success(t('logoutSuccessful'));
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast.error('Error logging out');
+    }
   };
 
   const startTour = () => {
