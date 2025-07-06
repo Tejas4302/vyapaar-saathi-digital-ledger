@@ -32,6 +32,7 @@ const Calculator: React.FC = () => {
   const [waitingForNewValue, setWaitingForNewValue] = useState(false);
   const [firstValue, setFirstValue] = useState<string | null>(null);
   const [calculationResult, setCalculationResult] = useState<number | null>(null);
+  const [calculationHistory, setCalculationHistory] = useState<string>('');
   
   // Transaction form states
   const [transactionType, setTransactionType] = useState<'cash_in' | 'cash_out'>('cash_in');
@@ -81,6 +82,7 @@ const Calculator: React.FC = () => {
     setFirstValue(null);
     setWaitingForNewValue(false);
     setCalculationResult(null);
+    setCalculationHistory('');
   };
 
   const performOperation = (nextOperation: string) => {
@@ -88,12 +90,14 @@ const Calculator: React.FC = () => {
 
     if (firstValue === null) {
       setFirstValue(display);
+      setCalculationHistory(display + ' ' + nextOperation + ' ');
     } else if (operation) {
       const currentValue = parseFloat(firstValue);
       const newValue = calculate(currentValue, inputValue, operation);
 
       setDisplay(String(newValue));
       setFirstValue(String(newValue));
+      setCalculationHistory(calculationHistory + display + ' ' + nextOperation + ' ');
     }
 
     setWaitingForNewValue(true);
@@ -123,6 +127,7 @@ const Calculator: React.FC = () => {
       
       setDisplay(String(result));
       setCalculationResult(result);
+      setCalculationHistory(calculationHistory + display + ' = ' + result);
       setOperation(null);
       setFirstValue(null);
       setWaitingForNewValue(true);
@@ -137,34 +142,51 @@ const Calculator: React.FC = () => {
       return;
     }
 
-    // Check validation
+    // Get selected customer and item details
+    const customer = customers.find(c => c.id === selectedCustomer);
+    const item = inventory.find(i => i.id === selectedItem);
+    
+    // Create comprehensive transaction summary
+    const transactionSummary = {
+      'Transaction Type': transactionType === 'cash_in' ? 'Cash In' : 'Cash Out',
+      'Amount': `₹${amount}`,
+      'Payment Mode': paymentMode.charAt(0).toUpperCase() + paymentMode.slice(1),
+      'Customer': customer?.name || 'No customer selected',
+      'Item': item?.name || 'No item selected',
+      'Calculation': calculationHistory || display
+    };
+
+    // Show detailed transaction review
+    let reviewMessage = 'Transaction Review:\n\n';
+    Object.entries(transactionSummary).forEach(([key, value]) => {
+      reviewMessage += `${key}: ${value}\n`;
+    });
+
+    // Validation checks
     const validationMessages = [];
     
     if (transactionType === 'cash_in' && !selectedCustomer && paymentMode === 'udhaar') {
-      validationMessages.push('Customer is required for credit transactions');
+      validationMessages.push('⚠️ Customer required for credit transactions');
     }
     
     if (amount > 100000) {
-      validationMessages.push('Large transaction amount detected');
+      validationMessages.push('⚠️ Large transaction amount detected');
     }
 
     if (validationMessages.length > 0) {
-      toast.warning(`Validation: ${validationMessages.join(', ')}`);
+      reviewMessage += '\nValidation Warnings:\n' + validationMessages.join('\n');
+      toast.warning('Please review transaction details');
     } else {
       toast.success('Transaction details verified ✓');
     }
 
-    // Display transaction summary
-    const customer = customers.find(c => c.id === selectedCustomer);
-    const item = inventory.find(i => i.id === selectedItem);
-    
-    console.log('Transaction Summary:', {
-      amount,
-      type: transactionType,
-      paymentMode,
-      customer: customer?.name || 'No customer selected',
-      item: item?.name || 'No item selected'
-    });
+    // Log detailed review for user to see
+    console.log('=== TRANSACTION REVIEW ===');
+    console.log(reviewMessage);
+    console.log('========================');
+
+    // Show review in a more user-friendly way
+    toast.info('Transaction review logged to console');
   };
 
   const handleSaveTransaction = async () => {
@@ -220,7 +242,8 @@ const Calculator: React.FC = () => {
       customer: customer?.name || 'Walk-in Customer',
       item: item?.name || '',
       date: new Date().toLocaleString(),
-      transactionId: 'TXN' + Date.now()
+      transactionId: 'TXN' + Date.now(),
+      calculation: calculationHistory || display
     };
 
     // For now, show a message about printing capability
@@ -245,14 +268,24 @@ const Calculator: React.FC = () => {
       </div>
 
       <Card className="mobile-card bg-white/80 backdrop-blur-sm shadow-xl">
-        {/* Display with modern styling */}
+        {/* Display with calculation history */}
         <div className="bg-gradient-to-r from-gray-900 to-gray-800 p-6 rounded-xl mb-6 shadow-inner">
+          {/* Calculation History */}
+          {calculationHistory && (
+            <div className="text-right text-sm font-mono text-gray-400 mb-2 min-h-[20px] break-all">
+              {calculationHistory}
+            </div>
+          )}
+          
+          {/* Current Display */}
           <div className="text-right text-3xl font-mono font-bold text-green-400 min-h-[50px] flex items-center justify-end break-all">
             ₹{display}
           </div>
+          
+          {/* Result Display */}
           {calculationResult && (
             <div className="text-right text-sm text-blue-400 mt-2">
-              Result: ₹{calculationResult}
+              Final Amount: ₹{calculationResult}
             </div>
           )}
         </div>
