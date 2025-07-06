@@ -311,6 +311,43 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const deleteCustomer = async (customerId: string) => {
+    if (!user) return;
+
+    try {
+      // First delete all transactions for this customer
+      const { error: transactionError } = await supabase
+        .from('transactions')
+        .delete()
+        .eq('customer_id', customerId)
+        .eq('user_id', user.id);
+
+      if (transactionError) {
+        console.error('Error deleting customer transactions:', transactionError);
+        throw transactionError;
+      }
+
+      // Then delete the customer
+      const { error: customerError } = await supabase
+        .from('customers')
+        .delete()
+        .eq('id', customerId)
+        .eq('user_id', user.id);
+
+      if (customerError) {
+        console.error('Error deleting customer:', customerError);
+        throw customerError;
+      }
+
+      // Update local state
+      setCustomers(prev => prev.filter(customer => customer.id !== customerId));
+      setTransactions(prev => prev.filter(transaction => transaction.customerId !== customerId));
+    } catch (error) {
+      console.error('Error deleting customer:', error);
+      throw error;
+    }
+  };
+
   const addInventoryItem = async (itemData: Omit<InventoryItem, 'id' | 'userId'>) => {
     if (!user) return;
 
@@ -446,6 +483,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       inventory,
       addTransaction,
       addCustomer,
+      deleteCustomer,
       addInventoryItem,
       deleteInventoryItem,
       updateStock,

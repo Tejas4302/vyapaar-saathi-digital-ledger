@@ -90,8 +90,8 @@ const AuthScreen: React.FC = () => {
               className="w-24 h-24 mx-auto rounded-full"
             />
           </div>
-          <h1 className="text-2xl font-bold text-primary mb-4">{t('welcomeTo')}</h1>
-          <p className="text-gray-600">{t('startManagingDigitally')}</p>
+          <h1 className="text-2xl font-bold text-primary mb-4">Welcome To</h1>
+          <p className="text-gray-600">Start Managing Digitally</p>
         </div>
 
         <Card className="p-6">

@@ -11,7 +11,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
 
 const CustomersScreen: React.FC = () => {
-  const { customers, addCustomer } = useData();
+  const { customers, addCustomer, deleteCustomer } = useData();
   const { t } = useLanguage();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<any>(null);
@@ -45,9 +45,14 @@ const CustomersScreen: React.FC = () => {
     });
   };
 
-  const handleDeleteCustomer = (customerId: string) => {
-    // Note: This would need to be implemented in DataContext
-    toast.success('Customer deleted!');
+  const handleDeleteCustomer = async (customerId: string) => {
+    try {
+      await deleteCustomer(customerId);
+      toast.success('Customer deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting customer:', error);
+      toast.error('Failed to delete customer. Please try again.');
+    }
   };
 
   const formatCurrency = (amount: number) => {
@@ -63,7 +68,7 @@ const CustomersScreen: React.FC = () => {
         <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-lg">
           <Users className="w-8 h-8 text-white" />
         </div>
-        <h1 className="text-2xl font-bold text-gray-800 mb-1">{t('customers')}</h1>
+        <h1 className="text-2xl font-bold text-gray-800 mb-1">Customers</h1>
         <p className="text-sm text-gray-600">Manage your customer relationships</p>
       </div>
 
@@ -87,16 +92,16 @@ const CustomersScreen: React.FC = () => {
         <DialogTrigger asChild>
           <Button className="w-full h-14 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 rounded-xl shadow-lg">
             <Plus className="w-5 h-5 mr-2" />
-            {t('addCustomer')}
+            Add Customer
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-sm mx-auto rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-gray-800">{t('addCustomer')}</DialogTitle>
+            <DialogTitle className="text-xl font-bold text-gray-800">Add Customer</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleAddCustomer} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-2 text-gray-700">{t('customerName')} *</label>
+              <label className="block text-sm font-medium mb-2 text-gray-700">Customer Name *</label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
@@ -110,7 +115,7 @@ const CustomersScreen: React.FC = () => {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2 text-gray-700">{t('phoneNumber')} (Optional)</label>
+              <label className="block text-sm font-medium mb-2 text-gray-700">Phone Number (Optional)</label>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
@@ -123,7 +128,7 @@ const CustomersScreen: React.FC = () => {
               </div>
             </div>
             <Button type="submit" className="w-full h-12 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700">
-              {t('addCustomer')}
+              Add Customer
             </Button>
           </form>
         </DialogContent>
@@ -197,7 +202,7 @@ const CustomersScreen: React.FC = () => {
                   className="flex-1 border-blue-200 hover:bg-blue-50 hover:border-blue-300"
                 >
                   <Edit className="w-4 h-4 mr-2" />
-                  {t('edit')}
+                  Edit
                 </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
@@ -207,14 +212,14 @@ const CustomersScreen: React.FC = () => {
                       className="flex-1 border-red-200 hover:bg-red-50 hover:border-red-300"
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
-                      {t('delete')}
+                      Delete
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent className="rounded-2xl">
                     <AlertDialogHeader>
                       <AlertDialogTitle>Delete Customer</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Are you sure you want to delete "{customer.name}"? This action cannot be undone.
+                        Are you sure you want to delete "{customer.name}"? This action cannot be undone and will also delete all associated transactions.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
