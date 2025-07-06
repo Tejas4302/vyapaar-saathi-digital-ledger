@@ -22,7 +22,8 @@ import {
   Package,
   Printer,
   Check,
-  ChevronsUpDown
+  ChevronsUpDown,
+  Save
 } from 'lucide-react';
 
 const Calculator: React.FC = () => {
@@ -30,6 +31,7 @@ const Calculator: React.FC = () => {
   const [operation, setOperation] = useState<string | null>(null);
   const [waitingForNewValue, setWaitingForNewValue] = useState(false);
   const [firstValue, setFirstValue] = useState<string | null>(null);
+  const [calculationResult, setCalculationResult] = useState<number | null>(null);
   
   // Transaction form states
   const [transactionType, setTransactionType] = useState<'cash_in' | 'cash_out'>('cash_in');
@@ -78,6 +80,7 @@ const Calculator: React.FC = () => {
     setOperation(null);
     setFirstValue(null);
     setWaitingForNewValue(false);
+    setCalculationResult(null);
   };
 
   const performOperation = (nextOperation: string) => {
@@ -112,8 +115,60 @@ const Calculator: React.FC = () => {
     }
   };
 
+  const handleEquals = () => {
+    if (operation && firstValue) {
+      const inputValue = parseFloat(display);
+      const currentValue = parseFloat(firstValue);
+      const result = calculate(currentValue, inputValue, operation);
+      
+      setDisplay(String(result));
+      setCalculationResult(result);
+      setOperation(null);
+      setFirstValue(null);
+      setWaitingForNewValue(true);
+    }
+  };
+
+  const handleCheckTransaction = () => {
+    const amount = calculationResult || parseFloat(display);
+    
+    if (amount <= 0) {
+      toast.error(t('pleaseEnterValidAmount'));
+      return;
+    }
+
+    // Check validation
+    const validationMessages = [];
+    
+    if (transactionType === 'cash_in' && !selectedCustomer && paymentMode === 'udhaar') {
+      validationMessages.push('Customer is required for credit transactions');
+    }
+    
+    if (amount > 100000) {
+      validationMessages.push('Large transaction amount detected');
+    }
+
+    if (validationMessages.length > 0) {
+      toast.warning(`Validation: ${validationMessages.join(', ')}`);
+    } else {
+      toast.success('Transaction details verified ✓');
+    }
+
+    // Display transaction summary
+    const customer = customers.find(c => c.id === selectedCustomer);
+    const item = inventory.find(i => i.id === selectedItem);
+    
+    console.log('Transaction Summary:', {
+      amount,
+      type: transactionType,
+      paymentMode,
+      customer: customer?.name || 'No customer selected',
+      item: item?.name || 'No item selected'
+    });
+  };
+
   const handleSaveTransaction = async () => {
-    const amount = parseFloat(display);
+    const amount = calculationResult || parseFloat(display);
     
     if (amount <= 0) {
       toast.error(t('pleaseEnterValidAmount'));
@@ -140,6 +195,7 @@ const Calculator: React.FC = () => {
       clear();
       setSelectedCustomer('');
       setSelectedItem('');
+      setCalculationResult(null);
     } catch (error) {
       console.error('Error saving transaction:', error);
       toast.error(t('failedToSaveTransaction'));
@@ -147,7 +203,7 @@ const Calculator: React.FC = () => {
   };
 
   const handlePrintBill = () => {
-    const amount = parseFloat(display);
+    const amount = calculationResult || parseFloat(display);
     if (amount <= 0) {
       toast.error(t('pleaseEnterValidAmount'));
       return;
@@ -194,6 +250,11 @@ const Calculator: React.FC = () => {
           <div className="text-right text-3xl font-mono font-bold text-green-400 min-h-[50px] flex items-center justify-end break-all">
             ₹{display}
           </div>
+          {calculationResult && (
+            <div className="text-right text-sm text-blue-400 mt-2">
+              Result: ₹{calculationResult}
+            </div>
+          )}
         </div>
 
         <div className="space-y-6 mb-6">
@@ -403,10 +464,24 @@ const Calculator: React.FC = () => {
           <Button variant="outline" onClick={inputDecimal} className="calculator-button calculator-number">.</Button>
           <Button 
             variant="default" 
-            onClick={handleSaveTransaction}
-            className="calculator-button col-span-3 calculator-equals font-semibold"
+            onClick={handleEquals}
+            className="calculator-button calculator-equals font-semibold"
           >
             =
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={handleCheckTransaction}
+            className="calculator-button bg-blue-50 border-blue-200 hover:bg-blue-100 text-blue-700 font-semibold"
+          >
+            <Check className="w-4 h-4" />
+          </Button>
+          <Button 
+            variant="default" 
+            onClick={handleSaveTransaction}
+            className="calculator-button gradient-success hover:from-green-700 hover:to-emerald-700 font-semibold"
+          >
+            <Save className="w-4 h-4" />
           </Button>
         </div>
 
