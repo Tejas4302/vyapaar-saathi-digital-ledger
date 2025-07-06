@@ -42,6 +42,7 @@ interface DataContextType {
   inventory: InventoryItem[];
   addTransaction: (transaction: Omit<Transaction, 'id' | 'date' | 'userId'>) => Promise<void>;
   addCustomer: (customer: Omit<Customer, 'id' | 'totalOutstanding' | 'transactions' | 'userId'>) => Promise<void>;
+  deleteCustomer: (customerId: string) => Promise<void>;
   addInventoryItem: (item: Omit<InventoryItem, 'id' | 'userId'>) => Promise<void>;
   deleteInventoryItem: (itemId: string) => Promise<void>;
   updateStock: (itemId: string, quantity: number) => Promise<void>;
