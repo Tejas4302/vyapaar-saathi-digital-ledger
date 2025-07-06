@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -82,15 +83,15 @@ const AuthScreen: React.FC = () => {
 
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="mb-4">
+          <div className="mb-6">
             <img 
               src="/lovable-uploads/592c8570-e687-4d0b-b5c3-abd42466406b.png" 
               alt="VyapaarSetu Logo" 
               className="w-24 h-24 mx-auto rounded-full"
             />
           </div>
-          <h1 className="text-2xl font-bold text-primary mb-2">{t('welcomeTo')}</h1>
-          <p className="text-gray-600 mt-2">{t('startManagingDigitally')}</p>
+          <h1 className="text-2xl font-bold text-primary mb-4">{t('welcomeTo')}</h1>
+          <p className="text-gray-600">{t('startManagingDigitally')}</p>
         </div>
 
         <Card className="p-6">

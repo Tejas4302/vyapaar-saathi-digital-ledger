@@ -18,9 +18,20 @@ import ProfileButton from '@/components/ProfileButton';
 const Index = () => {
   const { user, profile } = useAuth();
   const { t } = useLanguage();
-  const [showWelcome, setShowWelcome] = useState(!user);
+  const [showWelcome, setShowWelcome] = useState(false);
   const [activeTab, setActiveTab] = useState('calculator');
   const [showProductTour, setShowProductTour] = useState(false);
+
+  // Check if user is new and should see welcome slides (only for first-time users)
+  useEffect(() => {
+    if (!user) {
+      // Check if this is a first-time visitor
+      const hasSeenWelcome = localStorage.getItem('has_seen_welcome');
+      if (!hasSeenWelcome) {
+        setShowWelcome(true);
+      }
+    }
+  }, [user]);
 
   // Check if user is new and should see product tour
   useEffect(() => {
@@ -31,6 +42,11 @@ const Index = () => {
       }
     }
   }, [user]);
+
+  const handleWelcomeComplete = () => {
+    setShowWelcome(false);
+    localStorage.setItem('has_seen_welcome', 'true');
+  };
 
   const handleTourClose = () => {
     setShowProductTour(false);
@@ -43,12 +59,12 @@ const Index = () => {
     setActiveTab('profile');
   };
 
-  // Show welcome screen for new users
+  // Show welcome screen only for first-time users
   if (showWelcome && !user) {
-    return <WelcomeScreen onGetStarted={() => setShowWelcome(false)} />;
+    return <WelcomeScreen onGetStarted={handleWelcomeComplete} />;
   }
 
-  // Show auth screen if not logged in
+  // Show auth screen if not logged in (including after logout)
   if (!user) {
     return <AuthScreen />;
   }
