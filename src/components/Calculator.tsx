@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -65,14 +64,23 @@ const Calculator: React.FC = () => {
     } else {
       setDisplay(display === '0' ? num : display + num);
     }
+    
+    // Update calculation history to show all inputs
+    if (!waitingForNewValue && display !== '0') {
+      setCalculationHistory(prev => prev + num);
+    } else if (waitingForNewValue) {
+      setCalculationHistory(prev => prev + num);
+    }
   };
 
   const inputDecimal = () => {
     if (waitingForNewValue) {
       setDisplay('0.');
+      setCalculationHistory(prev => prev + '0.');
       setWaitingForNewValue(false);
     } else if (display.indexOf('.') === -1) {
       setDisplay(display + '.');
+      setCalculationHistory(prev => prev + '.');
     }
   };
 
@@ -131,62 +139,9 @@ const Calculator: React.FC = () => {
       setOperation(null);
       setFirstValue(null);
       setWaitingForNewValue(true);
+      
+      toast.success('Calculation completed! Review and save transaction.');
     }
-  };
-
-  const handleCheckTransaction = () => {
-    const amount = calculationResult || parseFloat(display);
-    
-    if (amount <= 0) {
-      toast.error(t('pleaseEnterValidAmount'));
-      return;
-    }
-
-    // Get selected customer and item details
-    const customer = customers.find(c => c.id === selectedCustomer);
-    const item = inventory.find(i => i.id === selectedItem);
-    
-    // Create comprehensive transaction summary
-    const transactionSummary = {
-      'Transaction Type': transactionType === 'cash_in' ? 'Cash In' : 'Cash Out',
-      'Amount': `₹${amount}`,
-      'Payment Mode': paymentMode.charAt(0).toUpperCase() + paymentMode.slice(1),
-      'Customer': customer?.name || 'No customer selected',
-      'Item': item?.name || 'No item selected',
-      'Calculation': calculationHistory || display
-    };
-
-    // Show detailed transaction review
-    let reviewMessage = 'Transaction Review:\n\n';
-    Object.entries(transactionSummary).forEach(([key, value]) => {
-      reviewMessage += `${key}: ${value}\n`;
-    });
-
-    // Validation checks
-    const validationMessages = [];
-    
-    if (transactionType === 'cash_in' && !selectedCustomer && paymentMode === 'udhaar') {
-      validationMessages.push('⚠️ Customer required for credit transactions');
-    }
-    
-    if (amount > 100000) {
-      validationMessages.push('⚠️ Large transaction amount detected');
-    }
-
-    if (validationMessages.length > 0) {
-      reviewMessage += '\nValidation Warnings:\n' + validationMessages.join('\n');
-      toast.warning('Please review transaction details');
-    } else {
-      toast.success('Transaction details verified ✓');
-    }
-
-    // Log detailed review for user to see
-    console.log('=== TRANSACTION REVIEW ===');
-    console.log(reviewMessage);
-    console.log('========================');
-
-    // Show review in a more user-friendly way
-    toast.info('Transaction review logged to console');
   };
 
   const handleSaveTransaction = async () => {
@@ -270,12 +225,10 @@ const Calculator: React.FC = () => {
       <Card className="mobile-card bg-white/80 backdrop-blur-sm shadow-xl">
         {/* Display with calculation history */}
         <div className="bg-gradient-to-r from-gray-900 to-gray-800 p-6 rounded-xl mb-6 shadow-inner">
-          {/* Calculation History */}
-          {calculationHistory && (
-            <div className="text-right text-sm font-mono text-gray-400 mb-2 min-h-[20px] break-all">
-              {calculationHistory}
-            </div>
-          )}
+          {/* Calculation History - Show all operations */}
+          <div className="text-right text-sm font-mono text-gray-400 mb-2 min-h-[20px] break-all">
+            {calculationHistory || 'Start calculating...'}
+          </div>
           
           {/* Current Display */}
           <div className="text-right text-3xl font-mono font-bold text-green-400 min-h-[50px] flex items-center justify-end break-all">
@@ -453,7 +406,7 @@ const Calculator: React.FC = () => {
           </div>
         </div>
 
-        {/* Calculator Buttons with improved design */}
+        {/* Calculator Buttons with improved design - removed check button */}
         <div className="grid grid-cols-4 gap-3">
           {/* Row 1 */}
           <Button variant="outline" onClick={clear} className="calculator-button bg-red-50 border-red-200 hover:bg-red-100 text-red-700 font-semibold">
@@ -493,7 +446,7 @@ const Calculator: React.FC = () => {
           <Button variant="outline" onClick={() => inputNumber('3')} className="calculator-button calculator-number">3</Button>
           <Button variant="outline" onClick={() => inputNumber('0')} className="calculator-button calculator-number">0</Button>
 
-          {/* Row 5 */}
+          {/* Row 5 - Removed check button, kept decimal, equals, and save */}
           <Button variant="outline" onClick={inputDecimal} className="calculator-button calculator-number">.</Button>
           <Button 
             variant="default" 
@@ -503,18 +456,12 @@ const Calculator: React.FC = () => {
             =
           </Button>
           <Button 
-            variant="outline" 
-            onClick={handleCheckTransaction}
-            className="calculator-button bg-blue-50 border-blue-200 hover:bg-blue-100 text-blue-700 font-semibold"
-          >
-            <Check className="w-4 h-4" />
-          </Button>
-          <Button 
             variant="default" 
             onClick={handleSaveTransaction}
-            className="calculator-button gradient-success hover:from-green-700 hover:to-emerald-700 font-semibold"
+            className="calculator-button gradient-success hover:from-green-700 hover:to-emerald-700 font-semibold col-span-2"
           >
-            <Save className="w-4 h-4" />
+            <Save className="w-4 h-4 mr-2" />
+            Save
           </Button>
         </div>
 
